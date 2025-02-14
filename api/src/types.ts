@@ -15,6 +15,7 @@ export type Comment = {
     id: number,
     user: User,
     text: string,
+    idProject: number,
 }
 
 export enum TaskState {
@@ -26,4 +27,5 @@ export type Task = {
     id: number,
     name: string,
     taskState: TaskState,
+    idProject: number,
 }

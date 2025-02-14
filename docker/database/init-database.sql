@@ -1,30 +1,34 @@
-CREATE IF NOT EXISTS TABLE Project (
+CREATE TABLE IF NOT EXISTS Project (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
     lastUpdate BIGINT NOT NULL
 );
 
-CREATE IF NOT EXISTS TABLE UserAccount (
+CREATE TABLE IF NOT EXISTS UserAccount (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL
 );
 
-CREATE IF NOT EXISTS TABLE Comment (
+CREATE TABLE IF NOT EXISTS Comment (
     id SERIAL PRIMARY KEY,
     userId INT NOT NULL,
     text TEXT NOT NULL,
+    idProject INT NOT NULL,
     CONSTRAINT fk_user FOREIGN KEY (userId) REFERENCES UserAccount (id) ON DELETE CASCADE
 );
 
-CREATE IF NOT EXISTS TYPE TaskState AS ENUM (
+CREATE TYPE TaskState AS ENUM (
     'En cours.',
     'A faire.'
 );
 
-CREATE IF NOT EXISTS TABLE Task (
+CREATE TABLE IF NOT EXISTS Task (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    taskState TaskState NOT NULL
+    taskState TaskState NOT NULL,
+    idProject INT NOT NULL
 );
+
+INSERT INTO UserAccount (email, password) VALUES ('test@gmail.com', '1234')

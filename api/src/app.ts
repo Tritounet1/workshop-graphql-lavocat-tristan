@@ -3,41 +3,10 @@ import { graphqlHTTP } from 'express-graphql';
 import { schema } from './schemas/schema';
 import { projectResolver } from './resolvers/projectResolver';
 import { taskResolver } from './resolvers/taskResolver';
-import { userResolver } from './resolvers/userResolver';
+import { loginMutation, userResolver } from './resolvers/userResolver';
 import { commentResolver } from './resolvers/commentResolver';
-
-const rootValue = {
-  ...taskResolver,
-  ...projectResolver,
-  ...userResolver,
-  ...commentResolver,
-  hello: () => 'Hello, GraphQL!',
-};
-
-const app = express();
-app.use('/graphql', graphqlHTTP({
-  schema,
-  rootValue,
-  graphiql: true,
-}));
-
-const PORT = 5050;
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}/graphql`);
-});
-
-
-
-/*
-import express from "express";
 import cors from "cors";
 import { Client } from "pg";
-
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-const port = 5050;
 
 const DB_CONFIG = {
   host: "task-management-database",
@@ -47,7 +16,7 @@ const DB_CONFIG = {
   password: "example",
 };
 
-const client = new Client(DB_CONFIG);
+export const client = new Client(DB_CONFIG);
 
 client
   .connect()
@@ -58,6 +27,23 @@ client
     console.error("Erreur de connexion à la base de données :", err);
   });
 
+const app = express();
+app.use(cors());
+
+const rootValue = {
+  ...loginMutation,
+  ...taskResolver,
+  ...projectResolver,
+  ...userResolver,
+  ...commentResolver,
+};
+
+app.use('/api', graphqlHTTP({
+  schema,
+  rootValue,
+  graphiql: true,
+}));
+
 app.use(async (req, res, next) => {
   try {
     next();
@@ -67,6 +53,24 @@ app.use(async (req, res, next) => {
   }
 });
 
+const PORT = 5050;
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}/graphql`);
+});
+
+process.on('SIGINT', async () => {
+  try {
+    await client.end();
+    console.log('Connexion à la base de données fermée');
+    process.exit(0);
+  } catch (err) {
+    console.error('Erreur lors de la fermeture de la base de données :', err);
+    process.exit(1);
+  }
+});
+
+
+/*
 app.get("/", (req, res) => {
   res.send("Hello, Express!");
 });
@@ -197,16 +201,7 @@ app.get('/api/connect/:login/:password', async (req, res) => {
   }
 });
 
-process.on('SIGINT', async () => {
-  try {
-    await client.end();
-    console.log('Connexion à la base de données fermée');
-    process.exit(0);
-  } catch (err) {
-    console.error('Erreur lors de la fermeture de la base de données :', err);
-    process.exit(1);
-  }
-});
+
 
 
  */

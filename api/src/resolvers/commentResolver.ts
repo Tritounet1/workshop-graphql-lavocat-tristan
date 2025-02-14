@@ -1,15 +1,30 @@
+import { client } from "../app";
 import { User, Comment } from "../types";
 
-const Users: User[] = [
-    { id: 1, email: 'user1@gmail.com', password: "1234", },
-    { id: 1, email: 'user2@gmail.com', password: "1234", },
-];
+const getComments = async () => {
+    try {
+        const result = await client.query('SELECT * FROM Comment');
+        const formattedResult = result.rows.map((row: Comment) => ({
+            id: row.id,
+            user: row.user,
+            text: row.text,
+            idProject: row.idProject,
+        }));
+        return formattedResult;
+    } catch (err) {
+        console.error('Erreur lors de la requête :', err);
+    }
+}
 
-const Comments: Comment[] = [
-    { id: 1, user: Users[0], text: "1234", },
-    { id: 1, user: Users[1], text: "1234", },
-];
+const createComment = async (user: User, text: string, idProject: number) => {
+    try {
+        const result = await client.query(`INSERT INTO Task(user, text, idProject) VALUES (${user}, ${text}), ${idProject}`);
+        return result;
+    } catch (err) {
+        console.error('Erreur lors de la requête :', err);
+    }
+}
 
 export const commentResolver = {
-    comments: () => Comments,
+    comments: () => getComments(),
 };
