@@ -13,7 +13,7 @@ services:
       - NODE_ENV=development
       - VITE_APP_BACKEND_URL=http://localhost:5050
 
-  task-managementapi:
+  task-management-api:
     build:
       context: ./api
       dockerfile: ../docker/api/Dockerfile
@@ -24,6 +24,8 @@ services:
       - ./api:/api
     environment:
       - NODE_ENV=development
+    depends_on:
+      - task-management-database
 
   task-management-database:
     image: postgres
@@ -36,4 +38,4 @@ services:
     volumes:
       - ./docker/database/init-database.sql:/docker-entrypoint-initdb.d/init-database.sql
     ports:
-      - "7070:5432"
+      - "5432:5432"

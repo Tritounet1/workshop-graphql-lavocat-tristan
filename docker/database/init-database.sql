@@ -1,0 +1,30 @@
+CREATE IF NOT EXISTS TABLE Project (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    lastUpdate BIGINT NOT NULL
+);
+
+CREATE IF NOT EXISTS TABLE UserAccount (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL
+);
+
+CREATE IF NOT EXISTS TABLE Comment (
+    id SERIAL PRIMARY KEY,
+    userId INT NOT NULL,
+    text TEXT NOT NULL,
+    CONSTRAINT fk_user FOREIGN KEY (userId) REFERENCES UserAccount (id) ON DELETE CASCADE
+);
+
+CREATE IF NOT EXISTS TYPE TaskState AS ENUM (
+    'En cours.',
+    'A faire.'
+);
+
+CREATE IF NOT EXISTS TABLE Task (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    taskState TaskState NOT NULL
+);

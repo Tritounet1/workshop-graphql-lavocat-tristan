@@ -1,13 +1,13 @@
-FROM python:3
+FROM node:18-slim
 
 WORKDIR /api
 
-COPY * ./
+COPY package*.json ./
 
-RUN pip install -r requirements.txt
+RUN npm install
 
 COPY . ./
 
 EXPOSE 5050
 
-CMD ["python", "main.py"]
+CMD ["npm", "run", "dev"]
