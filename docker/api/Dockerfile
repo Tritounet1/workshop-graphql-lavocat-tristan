@@ -1,0 +1,13 @@
+FROM python:3
+
+WORKDIR /api
+
+COPY * ./
+
+RUN pip install -r requirements.txt
+
+COPY . ./
+
+EXPOSE 5050
+
+CMD ["python", "main.py"]

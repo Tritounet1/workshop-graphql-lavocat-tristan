@@ -1,0 +1,39 @@
+services:
+  task-management-app:
+    build:
+      context: ./app
+      dockerfile: ../docker/app/Dockerfile
+    restart: on-failure
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./app:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_APP_BACKEND_URL=http://localhost:5050
+
+  task-managementapi:
+    build:
+      context: ./api
+      dockerfile: ../docker/api/Dockerfile
+    restart: on-failure
+    ports:
+      - "5050:5050"
+    volumes:
+      - ./api:/api
+    environment:
+      - NODE_ENV=development
+
+  task-management-database:
+    image: postgres
+    restart: on-failure
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: example
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: app
+    volumes:
+      - ./docker/database/init-database.sql:/docker-entrypoint-initdb.d/init-database.sql
+    ports:
+      - "7070:5432"
