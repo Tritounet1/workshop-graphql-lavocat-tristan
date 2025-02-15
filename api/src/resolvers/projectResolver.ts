@@ -17,7 +17,7 @@ const getProjects = async () => {
     }
 }
 
-const getProject = async (id: number) => {
+export const getProject = async (id: number) => {
     try {
         const query = 'SELECT * FROM Project WHERE id = $1';
         const values = [id];
@@ -49,7 +49,6 @@ export const createProject = async (name: string, description: string) => {
         const query = 'INSERT INTO Project(name, description) VALUES ($1, $2)';
         const values = [name, description];
         const result = await client.query(query, values);
-        console.log(result);
         if(result) {
             return true;
         }
@@ -81,7 +80,6 @@ const updateProjectLastDate = async (id: number) => {
         const values = [id];
         const result = await client.query(query, values);
 
-        console.log(result);
         if(result) {
             return true;
         }

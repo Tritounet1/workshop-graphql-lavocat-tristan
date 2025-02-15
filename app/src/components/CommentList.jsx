@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 export const CommentList = ({ comments }) => {
   if (!comments || !comments.length) {
     return <p className="text-center text-gray-500 italic">Aucun commentaire pour le moment.</p>;
@@ -19,3 +21,7 @@ export const CommentList = ({ comments }) => {
     </div>
   );
 }
+
+CommentList.propTypes = {
+  comments: PropTypes.array.isRequired,
+};

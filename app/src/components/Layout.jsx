@@ -1,6 +1,7 @@
 // src/components/Layout.jsx
 import { Link, useNavigate } from 'react-router-dom';
-import { LogOut, Briefcase, Menu } from 'lucide-react';
+import { LogOut, Briefcase } from 'lucide-react';
+import PropTypes from "prop-types";
 
 export const Layout = ({ children }) => {
   const navigate = useNavigate();
@@ -45,3 +46,7 @@ export const Layout = ({ children }) => {
     </div>
   );
 }
+
+Layout.propTypes = {
+  children: PropTypes.object.isRequired,
+};

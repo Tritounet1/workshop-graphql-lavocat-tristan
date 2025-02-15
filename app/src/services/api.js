@@ -56,6 +56,7 @@ export const getCommentsByProjectId = async (id) => {
         });
         return response.data.comment;
     } catch (err) {
+        console.log(err);
         return [];
     }
 };
@@ -84,6 +85,7 @@ export const getTasksByProjectId = async (id) => {
         });
         return response.data.task;
     } catch (err) {
+        console.log(err);
         return [];
     }
 };
@@ -109,5 +111,73 @@ export const getUserEmailById = async (id) => {
     } catch (err) {
         console.error('Erreur dans la requête :', err);
         return null;
+    }
+};
+
+export const login = async (email, password) => {
+    const client = new ApolloClient({
+        uri: API_ENDPOINT,
+        cache: new InMemoryCache(),
+    });
+
+    try {
+        const result = await client.mutate({
+            mutation: gql`
+              mutation Login($email: String!, $password: String!) {
+                login(email: $email, password: $password)
+              }
+            `,
+            variables: {
+                email: email,
+                password: password,
+            },
+        });
+
+        if (result.data.login) {
+            localStorage.setItem("token", result.data.login);
+            return true;
+        } else {
+            alert('Identifiants incorrects.');
+            return false;
+        }
+
+    } catch (err) {
+        console.error("Erreur dans la requête :", err);
+        alert('Une erreur est survenue lors de la connexion.');
+        return false;
+    }
+};
+
+export const register = async (email, password) => {
+    const client = new ApolloClient({
+        uri: "http://localhost:5050/api",
+        cache: new InMemoryCache(),
+    });
+
+    try {
+        const result = await client.mutate({
+            mutation: gql`
+              mutation Register($email: String!, $password: String!) {
+                register(email: $email, password: $password)
+              }
+            `,
+            variables: {
+                email: email,
+                password: password,
+            },
+        });
+
+        if (result.data.register) {
+            localStorage.setItem("token", result.data.register);
+            return true;
+        } else {
+            alert('Failed to register.');
+            return false;
+        }
+
+    } catch (err) {
+        console.error("Erreur dans la requête :", err);
+        alert('Une erreur est survenue lors de l\'inscription.');
+        return false;
     }
 };

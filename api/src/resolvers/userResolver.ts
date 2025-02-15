@@ -23,7 +23,6 @@ const getUserEmail = async (id: number) => {
         const query = 'SELECT email FROM UserAccount WHERE id = $1';
         const values = [id];
         const result = await client.query(query, values);
-        console.log(result);
         return result.rows[0].email;
     } catch (err) {
         console.error('Erreur lors de la requête :', err);

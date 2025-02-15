@@ -1,6 +1,7 @@
 import { Circle, Clock, CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
 import {ApolloClient, gql, InMemoryCache} from "@apollo/client";
+import PropTypes from "prop-types";
 
 export const TaskItem = ({ task }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -101,4 +102,8 @@ export const TaskItem = ({ task }) => {
         </div>
       </div>
   );
+};
+
+TaskItem.propTypes = {
+  task: PropTypes.object.isRequired,
 };

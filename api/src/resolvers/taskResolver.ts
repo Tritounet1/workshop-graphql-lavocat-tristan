@@ -10,7 +10,6 @@ const getTasks = async () => {
             state: row.state,
             project: row.project,
         }));
-        console.log(formattedResult);
         return formattedResult;
     } catch (err) {
         console.error('Erreur lors de la requête :', err);
@@ -32,7 +31,6 @@ const getTask = async (id: number) => {
             state: row.state,
             project: row.project,
         }));
-        console.log(formattedResult);
         return formattedResult;
     } catch (err) {
         console.error('Erreur lors de la requête :', err);
@@ -50,7 +48,6 @@ export const createTask = async (title: string, project: number) => {
         const query = 'INSERT INTO Task(title, state, project) VALUES ($1, $2, $3)';
         const values = [title, 'TO_DO', project];
         const result = await client.query(query, values);
-        console.log(result);
         if(result) {
             return true;
         }
@@ -83,7 +80,6 @@ const updateTaskState = async (id: number, state: string) => {
         const values = [id, state];
         const result = await client.query(query, values);
 
-        console.log(result);
         if(result) {
             return true;
         }

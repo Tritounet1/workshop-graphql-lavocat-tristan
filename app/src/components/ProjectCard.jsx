@@ -1,4 +1,5 @@
 import { Folder, ChevronRight, Clock } from 'lucide-react';
+import PropTypes from "prop-types";
 
 const getRelativeTime = (dateInput) => {
     if (!dateInput) return "Date inconnue";
@@ -36,4 +37,8 @@ export const ProjectCard = ({ project }) => {
             </div>
         </div>
     );
+};
+
+ProjectCard.propTypes = {
+    project: PropTypes.object.isRequired,
 };

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ApolloClient, InMemoryCache, ApolloProvider, gql } from '@apollo/client';
+import { register} from "../services/api.js";
 
 export const SignupPage = () => {
   const navigate = useNavigate();
@@ -15,36 +15,15 @@ export const SignupPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const client = new ApolloClient({
-      uri: "http://localhost:5050/api",
-      cache: new InMemoryCache(),
+    register(formData.email, formData.password).then((data) => {
+      if(data === true) {
+        navigate('/');
+      }
+      else {
+        // TODO throw message error
+        alert(data);
+      }
     });
-
-    client
-      .mutate({
-        mutation: gql`
-          mutation Register($email: String!, $password: String!) {
-            register(email: $email, password: $password)
-          }
-        `,
-        variables: {
-          email: formData.email,
-          password: formData.password,
-        },
-      })
-      .then((result) => {
-        if (result.data.login) {
-          localStorage.setItem("token", result.data.login);
-          navigate('/');
-        } else {
-          alert('Failed to register.');
-        }
-      })
-      .catch((err) => {
-        console.error("Erreur dans la requête :", err);
-        alert('Une erreur est survenue lors de la connexion.');
-      });
   };
 
   return (

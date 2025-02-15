@@ -31,7 +31,6 @@ const getComment = async (id: number) => {
             text: row.text,
             project: row.project,
         }));
-        console.log(formattedResult);
         return formattedResult;
     } catch (err) {
         console.error('Erreur lors de la requête :', err);
@@ -44,7 +43,6 @@ export const createComment = async (author: number, text: string, project: numbe
         const query = 'INSERT INTO Comment(author, text, project) VALUES ($1, $2, $3)';
         const values = [author, text, project];
         const result = await client.query(query, values);
-        console.log(result);
         if(result) {
             return true;
         }

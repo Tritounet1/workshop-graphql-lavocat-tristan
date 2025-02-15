@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ApolloClient, InMemoryCache, gql } from '@apollo/client';
+import {login} from "../services/api.js";
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -15,36 +15,15 @@ export const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const client = new ApolloClient({
-      uri: "http://localhost:5050/api",
-      cache: new InMemoryCache(),
-    });
-
-    client
-      .mutate({
-        mutation: gql`
-      mutation Login($email: String!, $password: String!) {
-        login(email: $email, password: $password)
+    login(formData.email, formData.password).then((data) => {
+      if(data === true) {
+        navigate('/');
       }
-    `,
-        variables: {
-          email: formData.email,
-          password: formData.password,
-        },
-      })
-      .then((result) => {
-        if (result.data.login) {
-          localStorage.setItem("token", result.data.login);
-          navigate('/');
-        } else {
-          alert('Identifiants incorrects.');
-        }
-      })
-      .catch((err) => {
-        console.error("Erreur dans la requête :", err);
-        alert('Une erreur est survenue lors de la connexion.');
-      });
+      else {
+        // TODO throw message error
+        alert(data);
+      }
+    });
   };
 
   return (

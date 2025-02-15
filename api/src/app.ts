@@ -1,7 +1,7 @@
 import express from 'express';
 import { graphqlHTTP } from 'express-graphql';
 import { schema } from './schemas/schema';
-import { ProjectMutation, ProjectQueries} from './resolvers/projectResolver';
+import {getProject, ProjectMutation, ProjectQueries} from './resolvers/projectResolver';
 import {createTaskMutation, taskResolver} from './resolvers/taskResolver';
 import { userMutation, userResolver } from './resolvers/userResolver';
 import {CommentMutation, commentResolver} from './resolvers/commentResolver';
@@ -25,6 +25,9 @@ client
   });
 
 const app = express();
+/*
+  ACTIVATE CORS SECURITY
+ */
 app.use(cors());
 
 const rootValue = {
@@ -55,46 +58,50 @@ app.use(async (req, res, next) => {
 
 const PORT = 5050;
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server is running on http://localhost:${PORT}/graphql`);
+  /* VERIF IF PROJECT ALREADY EXIST (FOR FIX THE DUPLICATION WHEN HOT RELOAD) */
+  const project = await getProject(1);
+  if (project) {
+    return;
+  }
   /* CREATING DEFAULT USER */
   createUser("test@gmail.com", "1234").then(r => {
-    if(r) {
+    if (r) {
       console.log("Default user create, email: test@gmail.com, password: 1234");
-    }
-    else {
+    } else {
       console.log("Can't create default user.")
     }
   });
   /* CREATING PROJECT EXAMPLE */
   createProject('Task Management', 'Create App for manage tasks').then(r => {
-    if(r) {
+    if (r) {
       console.log("Example project create.");
-    }
-    else {
+    } else {
       console.log("Can't create example project.")
     }
   })
   /* CREATING TASK EXAMPLE */
   createTask('Verif the readme', 1).then(r => {
-    if(r) {
+    if (r) {
       console.log("Example task create.");
-    }
-    else {
+    } else {
       console.log("Can't create example task.")
     }
   });
   /* CREATING COMMENT EXAMPLE */
   createComment(1, 'Hello :)', 1).then(r => {
-    if(r) {
+    if (r) {
       console.log("Example comment create.");
-    }
-    else {
+    } else {
       console.log("Can't create example comment.")
     }
   })
 });
 
+/*
+  CLEAN CLOSE CLIENT WHEN STOP THE PROGRAM
+ */
 process.on('SIGINT', async () => {
   try {
     await client.end();
