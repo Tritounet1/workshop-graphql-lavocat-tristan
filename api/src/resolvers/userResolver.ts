@@ -8,17 +8,9 @@ const getUsers = async () => {
             id: row.id,
             email: row.email,
             password: row.password,
+            role: row.role,
         }));
         return formattedResult;
-    } catch (err) {
-        console.error('Erreur lors de la requête :', err);
-    }
-}
-
-const createUser = async (email: string, password: string) => {
-    try {
-        const result = await client.query(`INSERT INTO UserAccount(email, password) VALUES (${email}, ${password})`);
-        return result;
     } catch (err) {
         console.error('Erreur lors de la requête :', err);
     }
@@ -28,11 +20,45 @@ export const userResolver = {
     users: () => getUsers(),
 };
 
+
+const createUser = async (email: string, password: string) => {
+    try {
+        const query = 'INSERT INTO UserAccount(email, password, role) VALUES ($1, $2, $3)';
+        const values = [email, password, 'USER'];
+        const result = await client.query(query, values);
+        if (result) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    } catch (err) {
+        console.error('Erreur lors de la requête :', err);
+    }
+}
+
 export const loginMutation = {
     login: async ({ email, password }: { email: string; password: string }) => {
         try {
             const users = await getUsers();
             return users?.find((user) => user.email === email && user.password === password) !== undefined;
+        } catch (error) {
+            console.error("Erreur lors de la mutation login :", error);
+            return false;
+        }
+    },
+};
+
+export const registerMutation = {
+    register: async ({ email, password }: { email: string; password: string }) => {
+        try {
+            const result = await createUser(email, password);
+            if (result) {
+                return true;
+            }
+            else {
+                return false;
+            }
         } catch (error) {
             console.error("Erreur lors de la mutation login :", error);
             return false;

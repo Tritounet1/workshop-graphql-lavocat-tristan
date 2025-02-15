@@ -1,31 +1,38 @@
+export enum UserRole {
+    'USER',
+    'ADMIN',
+}
+
+export enum TaskState {
+    'IN_PROGRESS',
+    'TO_DO',
+}
+
 export type Project = {
     id: number,
     name: string,
     description: string,
-    lastUpdate: number,
+    last_update: Date,
+    created_at: Date,
 }
 
 export type User = {
     id: number,
     email: string,
     password: string,
+    role: UserRole,
 }
 
 export type Comment = {
     id: number,
-    user: User,
+    author: User,
     text: string,
-    idProject: number,
-}
-
-export enum TaskState {
-    IN_PROGRESS = "En cours.",
-    TO_DO = "A faire.",
+    project: number,
 }
 
 export type Task = {
     id: number,
-    name: string,
-    taskState: TaskState,
-    idProject: number,
+    title: string,
+    state: TaskState,
+    project: number,
 }

@@ -6,9 +6,9 @@ const getComments = async () => {
         const result = await client.query('SELECT * FROM Comment');
         const formattedResult = result.rows.map((row: Comment) => ({
             id: row.id,
-            user: row.user,
+            author: row.author,
             text: row.text,
-            idProject: row.idProject,
+            project: row.project,
         }));
         return formattedResult;
     } catch (err) {
@@ -16,9 +16,9 @@ const getComments = async () => {
     }
 }
 
-const createComment = async (user: User, text: string, idProject: number) => {
+const createComment = async (author: User, text: string, project: number) => {
     try {
-        const result = await client.query(`INSERT INTO Task(user, text, idProject) VALUES (${user}, ${text}), ${idProject}`);
+        const result = await client.query(`INSERT INTO Task(author, text, project) VALUES (${author}, ${text}), ${project}`);
         return result;
     } catch (err) {
         console.error('Erreur lors de la requête :', err);

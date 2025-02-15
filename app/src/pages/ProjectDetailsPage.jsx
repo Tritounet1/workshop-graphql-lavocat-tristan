@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom';
 import {TaskItem} from '../components/TaskItem';
 import {CommentList} from '../components/CommentList';
 import { PlusCircle, CheckSquare, MessageSquare, ArrowLeft, Calendar } from 'lucide-react';
+import {ApolloClient, gql, InMemoryCache} from "@apollo/client";
 
 export const ProjectDetailsPage = () => {
   const { projectId } = useParams();
@@ -23,6 +24,39 @@ export const ProjectDetailsPage = () => {
       },
     ],
   };
+
+  const getProject = async (id) => {
+    const client = new ApolloClient({
+      uri: 'http://localhost:5050/api',
+      cache: new InMemoryCache(),
+    });
+
+    try {
+      const response = await client.query({
+        query: gql`
+        query ($id: Int!) {
+          project(id: $id) {
+            id
+            name
+            description
+            lastUpdate
+            createdAt
+          }
+        }
+      `,
+        variables: {
+          id,
+        },
+      });
+      return response.data.project;
+    } catch (err) {
+      console.error('Erreur dans la requête :', err);
+      return null;
+    }
+  };
+
+  /* TODO Récupérer tous les commentaires et tasks d'un projet */
+
 
   const handleAddTask = () => {
     alert('TODO: Mutation pour ajouter une nouvelle tâche');

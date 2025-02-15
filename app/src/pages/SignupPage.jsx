@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { ApolloClient, InMemoryCache, ApolloProvider, gql } from '@apollo/client';
 
 export const SignupPage = () => {
   const navigate = useNavigate();
@@ -14,8 +15,35 @@ export const SignupPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    navigate('/login');
-    alert('TODO: Implémenter la mutation signup');
+
+    const client = new ApolloClient({
+      uri: "http://localhost:5050/api",
+      cache: new InMemoryCache(),
+    });
+
+    client
+      .mutate({
+        mutation: gql`
+          mutation Register($email: String!, $password: String!) {
+            register(email: $email, password: $password)
+          }
+        `,
+        variables: {
+          email: formData.email,
+          password: formData.password,
+        },
+      })
+      .then((result) => {
+        if (result) {
+          navigate('/');
+        } else {
+          navigate('/login');
+        }
+      })
+      .catch((err) => {
+        console.error("Erreur dans la requête :", err);
+        alert('Une erreur est survenue lors de la connexion.');
+      });
   };
 
   return (
@@ -42,7 +70,7 @@ export const SignupPage = () => {
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
-        <button 
+        <button
           type="submit"
           className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
         >

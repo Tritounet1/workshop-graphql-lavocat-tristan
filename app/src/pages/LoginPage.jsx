@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ApolloClient, InMemoryCache, ApolloProvider, gql } from '@apollo/client';
+import { ApolloClient, InMemoryCache, gql } from '@apollo/client';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -44,7 +44,6 @@ export const LoginPage = () => {
         console.error("Erreur dans la requête :", err);
         alert('Une erreur est survenue lors de la connexion.');
       });
-
   };
 
   return (
