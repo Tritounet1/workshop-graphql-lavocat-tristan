@@ -25,7 +25,7 @@ jobs:
       # 3. Install dependencies
       - name: Install dependencies (Frontend)
         run: |
-          cd frontend
+          cd app
           npm install
 
       # 4. Run linting
@@ -56,5 +56,5 @@ jobs:
       # 4. Run linting
       - name: Lint (Backend)
         run: |
-          cd backend
+          cd api
           npm run lint
