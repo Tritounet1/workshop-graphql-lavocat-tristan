@@ -1,5 +1,5 @@
 import { client } from "../app";
-import { User } from "../types";
+import {User} from "../types";
 
 const getUsers = async () => {
     try {
@@ -16,7 +16,21 @@ const getUsers = async () => {
     }
 }
 
+const getUserEmail = async (id: number) => {
+    try {
+        const query = 'SELECT email FROM UserAccount WHERE id = $1';
+        const values = [id];
+        const result = await client.query(query, values);
+        console.log(result);
+        return result.rows[0].email;
+    } catch (err) {
+        console.error('Erreur lors de la requête :', err);
+        throw new Error('Impossible de récupérer le projet');
+    }
+};
+
 export const userResolver = {
+    user: ({ id }: { id: string | number }) => getUserEmail(Number(id)),
     users: () => getUsers(),
 };
 
@@ -49,8 +63,8 @@ export const loginMutation = {
     },
 };
 
-export const registerMutation = {
-    register: async ({ email, password }: { email: string; password: string }) => {
+export const userMutation = {
+    register: async ({ email, password }: { email: string, password: string }) => {
         try {
             const result = await createUser(email, password);
             if (result) {

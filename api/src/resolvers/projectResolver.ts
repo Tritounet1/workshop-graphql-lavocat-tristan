@@ -44,11 +44,6 @@ const getProject = async (id: number) => {
     }
 };
 
-export const projectResolver = {
-    projects: () => getProjects(),
-    project: ({ id }: { id: string | number }) => getProject(Number(id)),
-};
-
 const createProject = async (name: string, description: string) => {
     try {
         const query = 'INSERT INTO Project(name, description) VALUES ($1, $2)';
@@ -65,7 +60,46 @@ const createProject = async (name: string, description: string) => {
     }
 }
 
-export const createProjectMutation = {
+const deleteProject = async (id: number) => {    try {
+    const query = 'DELETE FROM Project WHERE id = $1';
+    const values = [id];
+    const result = await client.query(query, values);
+
+    if(result) {
+        return true;
+    }
+    return false;
+    } catch (err) {
+        console.error('Erreur lors de la requête :', err);
+        throw new Error('Impossible de récupérer le projet');
+    }
+}
+
+const updateProjectLastDate = async (id: number) => {
+    try {
+        const query = 'UPDATE Project SET last_update = NOW() WHERE id = $1';
+        const values = [id];
+        const result = await client.query(query, values);
+
+        console.log(result);
+        if(result) {
+            return true;
+        }
+        return false;
+        // return result;
+    } catch (err) {
+        console.error('Erreur lors de la requête :', err);
+        return false;
+    }
+};
+
+export const ProjectQueries = {
+    project: ({ id }: { id: string | number }) => getProject(Number(id)),
+    projects: () => getProjects(),
+};
+
+
+export const ProjectMutation = {
     createProject: async ({ name, description }: { name: string; description: string }) => {
         try {
             const result = await createProject(name, description);
@@ -76,8 +110,36 @@ export const createProjectMutation = {
                 return false;
             }
         } catch (error) {
-            console.error("Erreur lors de la mutation login :", error);
+            console.error("Erreur lors de la mutation :", error);
             return false;
         }
     },
-};
+    updateProjectDate: async ({ id } : { id: number }) => {
+        try {
+            const result = await updateProjectLastDate(id);
+            if (result) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        } catch (error) {
+            console.error("Erreur lors de la mutation :", error);
+            return false;
+        }
+    },
+    deleteProject: async ({ id } : { id: number }) => {
+        try {
+            const result = await deleteProject(id);
+            if (result) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        } catch (error) {
+            console.error("Erreur lors de la mutation :", error);
+            return false;
+        }
+    }
+}

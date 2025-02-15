@@ -2,74 +2,75 @@ import { Link, useParams } from 'react-router-dom';
 import {TaskItem} from '../components/TaskItem';
 import {CommentList} from '../components/CommentList';
 import { PlusCircle, CheckSquare, MessageSquare, ArrowLeft, Calendar } from 'lucide-react';
-import {ApolloClient, gql, InMemoryCache} from "@apollo/client";
+import {useEffect, useState} from "react";
+import {
+  getCommentsByProjectId,
+  getProjectById,
+  getTasksByProjectId,
+  getUserEmailById
+} from "../services/api.js";
+import TaskModal from "../components/TaskModal.jsx";
+import CommentModal from "../components/CommentModal.jsx";
 
 export const ProjectDetailsPage = () => {
   const { projectId } = useParams();
+  const [project, setProject] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
 
-  // Stub de données
-  const project = {
-    id: projectId,
-    name: 'Projet exemple',
-    description: 'Description du projet exemple.',
-    tasks: [
-      { id: 't1', title: 'Tâche 1', status: 'TODO' },
-      { id: 't2', title: 'Tâche 2', status: 'IN_PROGRESS' },
-    ],
-    comments: [
-      {
-        id: 'c1',
-        content: 'Premier commentaire',
-        author: { email: 'test@test.com' },
-      },
-    ],
-  };
+  useEffect(() => {
+    getProjectById(projectId).then((projectDetails) => {
+      getCommentsByProjectId(projectId).then((comments) => {
+        const commentsWithEmails = comments
+            ? Promise.all(
+                comments.map((comment) =>
+                    getUserEmailById(comment.author).then((email) => ({
+                      id: comment.id,
+                      author: { email },
+                      text: comment.text,
+                    }))
+                )
+            )
+            : Promise.resolve([]);
+        commentsWithEmails.then((resolvedComments) => {
+          getTasksByProjectId(projectId).then((tasks) => {
+            const tasksProperly = tasks
+                ? tasks.map((task) => ({
+                  id: task.id,
+                  title: task.title,
+                  state: task.state,
+                }))
+                : [];
 
-  const getProject = async (id) => {
-    const client = new ApolloClient({
-      uri: 'http://localhost:5050/api',
-      cache: new InMemoryCache(),
-    });
-
-    try {
-      const response = await client.query({
-        query: gql`
-        query ($id: Int!) {
-          project(id: $id) {
-            id
-            name
-            description
-            lastUpdate
-            createdAt
-          }
-        }
-      `,
-        variables: {
-          id,
-        },
+            setProject({
+              ...projectDetails,
+              tasks: tasksProperly,
+              comments: resolvedComments,
+            });
+            setLoading(false);
+          });
+        });
       });
-      return response.data.project;
-    } catch (err) {
-      console.error('Erreur dans la requête :', err);
-      return null;
-    }
-  };
-
-  /* TODO Récupérer tous les commentaires et tasks d'un projet */
-
+    });
+  }, [projectId]);
 
   const handleAddTask = () => {
-    alert('TODO: Mutation pour ajouter une nouvelle tâche');
+    setIsTaskModalOpen(true);
   };
 
   const handleAddComment = () => {
-    alert('TODO: Mutation pour ajouter un nouveau commentaire');
+    setIsCommentModalOpen(true);
   };
+
+  if(loading) {
+    return <p> Chargement... </p>;
+  }
 
   return (
     <div>
-      <Link 
-        to="/" 
+      <Link
+        to="/"
         className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-6"
       >
         <ArrowLeft className="h-4 w-4 mr-2" />
@@ -85,7 +86,11 @@ export const ProjectDetailsPage = () => {
             </div>
             <div className="flex items-center text-sm text-gray-500">
               <Calendar className="h-4 w-4 mr-1" />
-              <span>Créé le 12 Jan 2024</span>
+              <span>Créé le {new Date(project.createdAt).toLocaleDateString('fr-FR', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+              })}</span>
             </div>
           </div>
         </div>
@@ -96,7 +101,7 @@ export const ProjectDetailsPage = () => {
               <CheckSquare className="h-5 w-5 text-indigo-600" />
               <h3 className="text-xl font-semibold text-gray-900">Tâches</h3>
             </div>
-            <button 
+            <button
               onClick={handleAddTask}
               className="inline-flex items-center px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200"
             >
@@ -105,11 +110,13 @@ export const ProjectDetailsPage = () => {
             </button>
           </div>
           <ul className="space-y-3">
-            {project.tasks.map((task) => (
-              <li key={task.id}>
-                <TaskItem task={task} />
-              </li>
-            ))}
+            {project.tasks && project.tasks.length > 0 ? (
+                project.tasks.map((task) => (
+                    <li key={task.id}>
+                      <TaskItem task={task} />
+                    </li>
+                ))
+            ) : <p>Aucune tâche disponible.</p>}
           </ul>
         </div>
 
@@ -119,7 +126,7 @@ export const ProjectDetailsPage = () => {
               <MessageSquare className="h-5 w-5 text-indigo-600" />
               <h3 className="text-xl font-semibold text-gray-900">Commentaires</h3>
             </div>
-            <button 
+            <button
               onClick={handleAddComment}
               className="inline-flex items-center px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200"
             >
@@ -127,9 +134,17 @@ export const ProjectDetailsPage = () => {
               Ajouter un commentaire
             </button>
           </div>
-          <CommentList comments={project.comments} />
+          {project.comments && project.comments.length > 0 ? (
+              <CommentList comments={project.comments} />
+          ) : <p>Aucun commentaire pour ce projet.</p>}
         </div>
       </div>
+      {isTaskModalOpen && (
+          <TaskModal projectId={Number(projectId)} setIsModalOpen={setIsTaskModalOpen} />
+      )}
+      {isCommentModalOpen && (
+          <CommentModal authorId={1} projectId={Number(projectId)} setIsModalOpen={setIsCommentModalOpen} />
+      )}
     </div>
   );
 };

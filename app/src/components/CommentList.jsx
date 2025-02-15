@@ -13,7 +13,7 @@ export const CommentList = ({ comments }) => {
             </div>
             <div className="text-sm font-medium text-gray-600">{comment.author.email}</div>
           </div>
-          <div className="text-gray-800 pl-10">{comment.content}</div>
+          <div className="text-gray-800 pl-10">{comment.text}</div>
         </div>
       ))}
     </div>

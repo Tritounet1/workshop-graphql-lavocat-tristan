@@ -1,20 +1,13 @@
 import express from 'express';
 import { graphqlHTTP } from 'express-graphql';
 import { schema } from './schemas/schema';
-import {createProjectMutation, projectResolver} from './resolvers/projectResolver';
-import { taskResolver } from './resolvers/taskResolver';
-import { loginMutation, registerMutation, userResolver } from './resolvers/userResolver';
-import { commentResolver } from './resolvers/commentResolver';
+import { ProjectMutation, ProjectQueries} from './resolvers/projectResolver';
+import {createTaskMutation, taskResolver} from './resolvers/taskResolver';
+import { loginMutation, userMutation, userResolver } from './resolvers/userResolver';
+import {CommentMutation, commentResolver} from './resolvers/commentResolver';
 import cors from "cors";
 import { Client } from "pg";
-
-const DB_CONFIG = {
-  host: "task-management-database",
-  database: "app",
-  port: 5432,
-  user: "example",
-  password: "example",
-};
+import {DB_CONFIG} from "./DB_CONFIG";
 
 export const client = new Client(DB_CONFIG);
 
@@ -31,13 +24,15 @@ const app = express();
 app.use(cors());
 
 const rootValue = {
-  ...createProjectMutation,
+  ...ProjectMutation,
+  ...CommentMutation,
   ...userResolver,
   ...loginMutation,
-  ...registerMutation,
+  ...userMutation,
   ...taskResolver,
-  ...projectResolver,
+  ...ProjectQueries,
   ...commentResolver,
+  ...createTaskMutation,
 };
 
 app.use('/api', graphqlHTTP({
@@ -56,6 +51,7 @@ app.use(async (req, res, next) => {
 });
 
 const PORT = 5050;
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}/graphql`);
 });

@@ -1,39 +1,104 @@
 import { Circle, Clock, CheckCircle2 } from 'lucide-react';
+import { useState } from 'react';
+import {ApolloClient, gql, InMemoryCache} from "@apollo/client";
 
 export const TaskItem = ({ task }) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   const statusConfig = {
-    TODO: {
+    TO_DO: {
       icon: Circle,
       color: 'text-blue-500',
       bg: 'bg-blue-50',
-      text: 'À faire'
+      text: 'À faire',
     },
     IN_PROGRESS: {
       icon: Clock,
       color: 'text-orange-500',
       bg: 'bg-orange-50',
-      text: 'En cours'
+      text: 'En cours',
     },
     DONE: {
       icon: CheckCircle2,
       color: 'text-green-500',
       bg: 'bg-green-50',
-      text: 'Terminé'
-    }
+      text: 'Terminé',
+    },
   };
 
-  const config = statusConfig[task.status];
+  const config = statusConfig[task.state];
   const StatusIcon = config.icon;
 
+  const handleTaskStateChange = (newState, lastState, taskId) => {
+    if(newState === lastState) {
+      setIsMenuOpen(false);
+      return;
+    }
+    const client = new ApolloClient({
+      uri: 'http://localhost:5050/api',
+      cache: new InMemoryCache(),
+    });
+
+    client
+        .mutate({
+          mutation: gql`
+          mutation updateTaskState($id: ID!, $state: String!) {
+            updateTaskState(id: $id, state: $state)
+          }
+        `,
+          variables: {
+            id: taskId,
+            state: newState,
+          },
+        })
+        .then((result) => {
+          console.log(result);
+          console.log(result.data);
+          if (result) {
+            setIsMenuOpen(false);
+            window.location.reload();
+          } else {
+            alert("Erreur dans la modification d'une tâche.");
+          }
+        })
+        .catch((err) => {
+          console.error('Erreur dans la requête :', err);
+          alert('Une erreur est survenue lors de la connexion.');
+        });
+  };
+
   return (
-    <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:shadow-sm transition-all duration-200">
-      <div className="flex items-center space-x-3">
-        <StatusIcon className={`h-5 w-5 ${config.color}`} />
-        <span className="text-gray-900 font-medium">{task.title}</span>
+      <div className="relative flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:shadow-sm transition-all duration-200">
+        <div className="flex items-center space-x-3">
+          <StatusIcon className={`h-5 w-5 ${config.color}`} />
+          <span className="text-gray-900 font-medium">{task.title}</span>
+        </div>
+
+        <div className="relative">
+          <button
+              className={`px-3 py-1 text-sm font-medium rounded-full ${config.bg} ${config.color}`}
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {config.text}
+          </button>
+
+          {isMenuOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-md z-10">
+                {Object.entries(statusConfig).map(([stateKey, stateConfig]) => (
+                    <button
+                        key={stateKey}
+                        className={`flex items-center px-4 py-2 text-sm w-full text-left hover:bg-gray-100 ${
+                            task.state === stateKey ? 'bg-gray-100' : ''
+                        }`}
+                        onClick={() => handleTaskStateChange(stateKey, task.state, task.id)}
+                    >
+                      <stateConfig.icon className={`h-5 w-5 ${stateConfig.color}`} />
+                      <span className="ml-2">{stateConfig.text}</span>
+                    </button>
+                ))}
+              </div>
+          )}
+        </div>
       </div>
-      <span className={`px-3 py-1 text-sm font-medium rounded-full ${config.bg} ${config.color}`}>
-        {config.text}
-      </span>
-    </div>
   );
 };

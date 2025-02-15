@@ -1,4 +1,5 @@
 import { buildSchema } from 'graphql';
+import {ProjectMutation, ProjectQueries} from "../resolvers/projectResolver";
 
 export const schema = buildSchema(`#graphql
   type Query {
@@ -7,19 +8,20 @@ export const schema = buildSchema(`#graphql
     users: [User!]!
     comments: [Comment!]!
     project(id: ID!): Project!
-    
-    task(id: ID!): Task!
+    task(id: ID!): [Task!]!
+    comment(id: ID!): [Comment!]
+    user(id: ID!): String!
   }
 
   type Mutation {
     login(email: String!, password: String!): Boolean!
     register(email: String!, password: String!): Boolean!
     createProject(name: String!, description: String!): Boolean!
-    
-    updateProject(id: ID!, lastUpdate: String!): Boolean!
+    createTask(title: String!, project: Int!): Boolean!
+    createComment(author: Int!, text: String!, project: Int!): Boolean!
+    updateProjectDate(id: ID!): Boolean!
     deleteProject(id: ID!): Boolean
-    createTask(title: String!): Boolean!
-    updateTask(id: ID!, state: String!): Boolean!
+    updateTaskState(id: ID!, state: String!): Boolean!
     deleteTask(id: ID!): Boolean!
   }
 
@@ -52,3 +54,15 @@ export const schema = buildSchema(`#graphql
     project: Int!
   }
 `);
+
+export const queries = {
+    ...ProjectQueries,
+}
+
+export const mutations = {
+    ...ProjectMutation,
+}
+
+export const subscriptions = {
+
+}

@@ -25,7 +25,7 @@ export type User = {
 
 export type Comment = {
     id: number,
-    author: User,
+    author: number,
     text: string,
     project: number,
 }
