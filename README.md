@@ -4,12 +4,14 @@
 
 
 
-## Lancer application :
+## L'application :
 
 L'application est entièrement dockerisé, on trouve 3 services dans le docker-compose.yml :
 - task-management-app (Frontend de l'application React)
 - task-management-api (Backend de l'application GraphQL)
 - task-management-database (Base de donnée PostgresSQL)
+
+Pour lancer l'application
 
 `docker compose up --build -d`
 

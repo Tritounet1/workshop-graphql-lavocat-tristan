@@ -48,7 +48,7 @@ export const taskResolver = {
 const createTask = async (title: string, project: number) => {
     try {
         const query = 'INSERT INTO Task(title, state, project) VALUES ($1, $2, $3)';
-        const values = [title, 'IN_PROGRESS', project];
+        const values = [title, 'TO_DO', project];
         const result = await client.query(query, values);
         console.log(result);
         if(result) {

@@ -1,5 +1,6 @@
 import { client } from "../app";
 import {User} from "../types";
+import jwt from "jsonwebtoken";
 
 const getUsers = async () => {
     try {
@@ -51,11 +52,35 @@ const createUser = async (email: string, password: string) => {
     }
 }
 
+const createTokenFromJson = (jsonData: any, options={}) => {
+    try {
+        const secretKey = "test";
+        const token = jwt.sign(jsonData, secretKey, options);
+        return token;
+    }catch (err) {
+        console.error('Erreur lors de token:', err);
+        return null;
+    }
+
+}
+
 export const loginMutation = {
     login: async ({ email, password }: { email: string; password: string }) => {
         try {
             const users = await getUsers();
-            return users?.find((user) => user.email === email && user.password === password) !== undefined;
+            const user = users?.find((user) => user.email === email && user.password === password) !== undefined
+            if(user) {
+                const token = createTokenFromJson({ email: email, password: password });
+                if(token) {
+                    return token;
+                }
+                else {
+                    return null;
+                }
+            }
+            else {
+                return null;
+            }
         } catch (error) {
             console.error("Erreur lors de la mutation login :", error);
             return false;
@@ -67,11 +92,17 @@ export const userMutation = {
     register: async ({ email, password }: { email: string, password: string }) => {
         try {
             const result = await createUser(email, password);
-            if (result) {
-                return true;
+            if(result) {
+                const token = createTokenFromJson({ email: email, password: password });
+                if(token) {
+                    return token;
+                }
+                else {
+                    return null;
+                }
             }
             else {
-                return false;
+                return null;
             }
         } catch (error) {
             console.error("Erreur lors de la mutation login :", error);

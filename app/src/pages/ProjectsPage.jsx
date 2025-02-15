@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { PlusCircle, Search } from 'lucide-react';
 import { ProjectCard } from '../components/ProjectCard';
-import { ApolloClient, gql, InMemoryCache } from '@apollo/client';
+import {ApolloClient, gql, InMemoryCache} from '@apollo/client';
 import { useEffect, useState } from 'react';
 import ProjectModal from "../components/ProjectModal.jsx";
 

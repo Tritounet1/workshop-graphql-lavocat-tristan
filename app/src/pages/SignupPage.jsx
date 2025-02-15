@@ -34,10 +34,11 @@ export const SignupPage = () => {
         },
       })
       .then((result) => {
-        if (result) {
+        if (result.data.login) {
+          localStorage.setItem("token", result.data.login);
           navigate('/');
         } else {
-          navigate('/login');
+          alert('Failed to register.');
         }
       })
       .catch((err) => {

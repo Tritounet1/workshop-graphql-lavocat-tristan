@@ -2,21 +2,6 @@ import {ApolloClient, gql, InMemoryCache} from "@apollo/client";
 
 const API_ENDPOINT = "http://localhost:5050/api"
 
-
-/*
-export const getProjects = () => {
-
-
-}
-
-export const createProject = (name, description) => {
-
-
-}
-*/
-
-
-
 export const getProjectById = async (id) => {
     const client = new ApolloClient({
         uri: API_ENDPOINT,
@@ -46,7 +31,6 @@ export const getProjectById = async (id) => {
         return null;
     }
 };
-
 
 export const getCommentsByProjectId = async (id) => {
     const client = new ApolloClient({
@@ -103,8 +87,6 @@ export const getTasksByProjectId = async (id) => {
         return [];
     }
 };
-
-
 
 export const getUserEmailById = async (id) => {
     const client = new ApolloClient({

@@ -14,15 +14,27 @@ export const schema = buildSchema(`#graphql
   }
 
   type Mutation {
-    login(email: String!, password: String!): Boolean!
-    register(email: String!, password: String!): Boolean!
+    login(email: String!, password: String!): String!
+    register(email: String!, password: String!): String!
+    
     createProject(name: String!, description: String!): Boolean!
     createTask(title: String!, project: Int!): Boolean!
     createComment(author: Int!, text: String!, project: Int!): Boolean!
     updateProjectDate(id: ID!): Boolean!
-    deleteProject(id: ID!): Boolean
     updateTaskState(id: ID!, state: String!): Boolean!
     deleteTask(id: ID!): Boolean!
+    
+    deleteProject(id: ID!): Boolean!
+  }
+  
+  type Subscription {
+    createProject(name: String!, description: String!): Project!
+    createTask(title: String!, project: Int!): Task!
+    createComment(author: Int!, text: String!, project: Int!): Comment!
+    updateProjectDate(id: ID!): Project!
+    updateTaskState(id: ID!, state: String!): Task!
+    deleteTask(id: ID!): Task!
+    deleteProject(id: ID!): Project!
   }
 
   type Project {

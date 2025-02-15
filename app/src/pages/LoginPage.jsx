@@ -35,6 +35,7 @@ export const LoginPage = () => {
       })
       .then((result) => {
         if (result.data.login) {
+          localStorage.setItem("token", result.data.login);
           navigate('/');
         } else {
           alert('Identifiants incorrects.');
