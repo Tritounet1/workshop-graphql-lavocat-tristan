@@ -1,6 +1,7 @@
 import { client } from "../app";
 import {User} from "../types";
 import jwt from "jsonwebtoken";
+import { hashPassword, comparePassword } from "../utils";
 
 const getUsers = async () => {
     try {
@@ -36,10 +37,11 @@ export const userResolver = {
 };
 
 
-const createUser = async (email: string, password: string) => {
+export const createUser = async (email: string, password: string) => {
     try {
         const query = 'INSERT INTO UserAccount(email, password, role) VALUES ($1, $2, $3)';
-        const values = [email, password, 'USER'];
+        const hashedPassword = hashPassword(password);
+        const values = [email, hashedPassword, 'USER'];
         const result = await client.query(query, values);
         if (result) {
             return true;
@@ -55,8 +57,7 @@ const createUser = async (email: string, password: string) => {
 const createTokenFromJson = (jsonData: any, options={}) => {
     try {
         const secretKey = "test";
-        const token = jwt.sign(jsonData, secretKey, options);
-        return token;
+        return jwt.sign(jsonData, secretKey, options);
     }catch (err) {
         console.error('Erreur lors de token:', err);
         return null;
@@ -64,11 +65,11 @@ const createTokenFromJson = (jsonData: any, options={}) => {
 
 }
 
-export const loginMutation = {
+export const userMutation = {
     login: async ({ email, password }: { email: string; password: string }) => {
         try {
             const users = await getUsers();
-            const user = users?.find((user) => user.email === email && user.password === password) !== undefined
+            const user = users?.find((user) => user.email === email && comparePassword(password, user.password)) !== undefined
             if(user) {
                 const token = createTokenFromJson({ email: email, password: password });
                 if(token) {
@@ -86,9 +87,6 @@ export const loginMutation = {
             return false;
         }
     },
-};
-
-export const userMutation = {
     register: async ({ email, password }: { email: string, password: string }) => {
         try {
             const result = await createUser(email, password);
@@ -106,7 +104,7 @@ export const userMutation = {
             }
         } catch (error) {
             console.error("Erreur lors de la mutation login :", error);
-            return false;
+            return null;
         }
     },
 };

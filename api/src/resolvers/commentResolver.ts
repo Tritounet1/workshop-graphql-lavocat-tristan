@@ -39,7 +39,7 @@ const getComment = async (id: number) => {
     }
 };
 
-const createComment = async (author: number, text: string, project: number) => {
+export const createComment = async (author: number, text: string, project: number) => {
     try {
         const query = 'INSERT INTO Comment(author, text, project) VALUES ($1, $2, $3)';
         const values = [author, text, project];

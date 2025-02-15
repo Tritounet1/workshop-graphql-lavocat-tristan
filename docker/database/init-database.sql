@@ -13,7 +13,7 @@ CREATE TYPE UserRole AS ENUM (
 
 CREATE TABLE IF NOT EXISTS UserAccount (
     id SERIAL PRIMARY KEY,
-    email VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     role UserRole NOT NULL
 );
@@ -40,8 +40,3 @@ CREATE TABLE IF NOT EXISTS Task (
     project INT NOT NULL,
     CONSTRAINT fk_project_task FOREIGN KEY (project) REFERENCES Project (id) ON DELETE CASCADE
 );
-
-INSERT INTO UserAccount (email, password, role) VALUES ('test@gmail.com', '1234', 'USER');
-INSERT INTO Project (name, description, last_update, created_at) VALUES ('Projet 1', 'Description...', NOW(), NOW());
-INSERT INTO Comment (author, text, project) VALUES (1, '.........', 1);
-INSERT INTO Task (title, state, project) VALUES ('Tâche 1', 'IN_PROGRESS', 1);

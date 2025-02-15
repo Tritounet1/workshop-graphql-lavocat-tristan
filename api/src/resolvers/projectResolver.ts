@@ -44,7 +44,7 @@ const getProject = async (id: number) => {
     }
 };
 
-const createProject = async (name: string, description: string) => {
+export const createProject = async (name: string, description: string) => {
     try {
         const query = 'INSERT INTO Project(name, description) VALUES ($1, $2)';
         const values = [name, description];

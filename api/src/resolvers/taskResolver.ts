@@ -45,7 +45,7 @@ export const taskResolver = {
     task: ({ id }: { id: string | number }) => getTask(Number(id)),
 };
 
-const createTask = async (title: string, project: number) => {
+export const createTask = async (title: string, project: number) => {
     try {
         const query = 'INSERT INTO Task(title, state, project) VALUES ($1, $2, $3)';
         const values = [title, 'TO_DO', project];
