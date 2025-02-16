@@ -12,6 +12,17 @@ import {createUser} from "./resolvers/userResolver";
 import {createTask} from "./resolvers/taskResolver";
 import {createProject} from "./resolvers/projectResolver";
 import {createComment} from "./resolvers/commentResolver";
+import {getTokenData} from "./utils";
+
+
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Express {
+    interface Request {
+      user?: unknown;
+    }
+  }
+}
 
 export const client = new Client(DB_CONFIG);
 
@@ -41,12 +52,36 @@ const rootValue = {
   ...createTaskMutation,
 };
 
+/*
+  MIDDLEWARE POUR VERIFIER IDENTIFICATION D'UN USER ET LA VALIDE DU TOKEN
+ */
+app.use(async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  console.log("test autorisation : ");
+  console.log(authHeader);
+
+  if (authHeader) {
+    const token = authHeader.split(" ")[1];
+    try {
+      req.user = getTokenData(token);
+      console.log(req.user);
+    } catch (err) {
+      console.error("Invalid token:", err);
+    }
+  }
+
+  next();
+});
+
 app.use('/api', graphqlHTTP({
   schema,
   rootValue,
   graphiql: true,
 }));
 
+/*
+  GESTION DES ERREURS APRES GRAPHQL
+ */
 app.use(async (req, res, next) => {
   try {
     next();

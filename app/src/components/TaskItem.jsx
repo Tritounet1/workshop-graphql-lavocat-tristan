@@ -1,7 +1,7 @@
 import { Circle, Clock, CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
-import {ApolloClient, gql, InMemoryCache} from "@apollo/client";
 import PropTypes from "prop-types";
+import {updateTaskState} from "../services/api.js";
 
 export const TaskItem = ({ task }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -30,42 +30,21 @@ export const TaskItem = ({ task }) => {
   const config = statusConfig[task.state];
   const StatusIcon = config.icon;
 
-  const handleTaskStateChange = (newState, lastState, taskId) => {
-    if(newState === lastState) {
-      setIsMenuOpen(false);
-      return;
-    }
-    const client = new ApolloClient({
-      uri: 'http://localhost:5050/api',
-      cache: new InMemoryCache(),
-    });
+  const handleTaskStateChange = async (newState, lastState, taskId) => {
+    try {
+      const response = await updateTaskState(taskId, newState, lastState);
 
-    client
-        .mutate({
-          mutation: gql`
-          mutation updateTaskState($id: ID!, $state: String!) {
-            updateTaskState(id: $id, state: $state)
-          }
-        `,
-          variables: {
-            id: taskId,
-            state: newState,
-          },
-        })
-        .then((result) => {
-          console.log(result);
-          console.log(result.data);
-          if (result) {
-            setIsMenuOpen(false);
-            window.location.reload();
-          } else {
-            alert("Erreur dans la modification d'une tâche.");
-          }
-        })
-        .catch((err) => {
-          console.error('Erreur dans la requête :', err);
-          alert('Une erreur est survenue lors de la connexion.');
-        });
+      if (response.success) {
+        setIsMenuOpen(false);
+        window.location.reload();
+      } else {
+        console.error(response.error || "Erreur inconnue lors de la modification de l'état de la tâche.");
+        alert(response.error || "Erreur inconnue lors de la modification de l'état de la tâche.");
+      }
+    } catch (error) {
+      console.error("Erreur inattendue :", error);
+      alert("Une erreur inattendue est survenue.");
+    }
   };
 
   return (

@@ -1,53 +1,35 @@
-import {ApolloClient, gql, InMemoryCache} from "@apollo/client";
 import {useState} from "react";
 import PropTypes from "prop-types";
+import {createComment} from "../services/api.js";
 
 const CommentModal = ({ authorId, projectId, setIsModalOpen }) => {
     const [formData, setFormData] = useState({ text: '' });
     const [error, setError] = useState('');
 
-    const handleNewComment = () => {
+    const handleNewComment = async () => {
         if (!formData.text) {
-            setError('Veuillez remplir tous les champs.');
+            setError("Veuillez remplir tous les champs.");
             return;
         }
 
-        setError('')
+        setError("");
 
-        const client = new ApolloClient({
-            uri: 'http://localhost:5050/api',
-            cache: new InMemoryCache(),
-        });
+        try {
+            const response = await createComment(authorId, formData.text, projectId);
 
-        client
-            .mutate({
-                mutation: gql`
-          mutation createComment($author: Int!, $text: String!, $project: Int!) {
-            createComment(author: $author, text: $text, project: $project)
-          }
-        `,
-                variables: {
-                    author: authorId,
-                    text: formData.text,
-                    project: projectId,
-                },
-            })
-            .then((result) => {
-                console.log(result);
-                console.log(result.data);
-                if (result) {
-                    setIsModalOpen(false);
-                    setFormData({ text: '', });
-                    window.location.reload();
-                } else {
-                    alert("Erreur dans la création d'un commentaire.");
-                }
-            })
-            .catch((err) => {
-                console.error('Erreur dans la requête :', err);
-                alert('Une erreur est survenue lors de la connexion.');
-            });
-
+            if (response.success) {
+                console.log("Commentaire créé avec succès.");
+                setIsModalOpen(false);
+                setFormData({ text: "" });
+                window.location.reload();
+            } else {
+                console.error(response.error || "Erreur inconnue lors de la création du commentaire.");
+                alert(response.error || "Erreur inconnue lors de la création du commentaire.");
+            }
+        } catch (err) {
+            console.error("Erreur non gérée :", err);
+            alert("Une erreur inattendue est survenue.");
+        }
     };
 
     const handleInputChange = (e) => {

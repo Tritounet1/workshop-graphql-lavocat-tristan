@@ -60,7 +60,7 @@ export const createTask = async (title: string, project: number) => {
 
 
 const deleteTask = async (id: number) => {    try {
-    const query = 'DELETE FROM Project WHERE id = $1';
+    const query = 'DELETE FROM Task WHERE id = $1';
     const values = [id];
     const result = await client.query(query, values);
 
@@ -68,10 +68,10 @@ const deleteTask = async (id: number) => {    try {
         return true;
     }
     return false;
-} catch (err) {
-    console.error('Erreur lors de la requête :', err);
-    throw new Error('Impossible de récupérer le projet');
-}
+    } catch (err) {
+        console.error('Erreur lors de la requête :', err);
+        throw new Error('Impossible de récupérer le projet');
+    }
 }
 
 const updateTaskState = async (id: number, state: string) => {

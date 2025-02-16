@@ -58,6 +58,21 @@ export const commentResolver = {
     comment: ({ id }: { id: string | number }) => getComment(Number(id)),
 };
 
+const deleteComment = async (id: number) => {    try {
+    const query = 'DELETE FROM Comment WHERE id = $1';
+    const values = [id];
+    const result = await client.query(query, values);
+
+    if(result) {
+        return true;
+    }
+    return false;
+} catch (err) {
+    console.error('Erreur lors de la requête :', err);
+    throw new Error('Impossible de récupérer le projet');
+}
+}
+
 export const CommentMutation = {
     createComment: async ({ author, text, project }: { author: number, text: string, project: number }) => {
         try {
@@ -73,4 +88,18 @@ export const CommentMutation = {
             return false;
         }
     },
+    deleteComment: async ({ id } : { id: number }) => {
+        try {
+            const result = await deleteComment(id);
+            if (result) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        } catch (error) {
+            console.error("Erreur lors de la mutation :", error);
+            return false;
+        }
+    }
 }

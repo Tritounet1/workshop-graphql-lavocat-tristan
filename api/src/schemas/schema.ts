@@ -23,7 +23,7 @@ export const schema = buildSchema(`#graphql
     updateProjectDate(id: ID!): Boolean!
     updateTaskState(id: ID!, state: String!): Boolean!
     deleteTask(id: ID!): Boolean!
-    
+    deleteComment(id: ID!): Boolean!
     deleteProject(id: ID!): Boolean!
   }
   
@@ -34,6 +34,7 @@ export const schema = buildSchema(`#graphql
     updateProjectDate(id: ID!): Project!
     updateTaskState(id: ID!, state: String!): Task!
     deleteTask(id: ID!): Task!
+    deleteComment(id: ID!): Comment!
     deleteProject(id: ID!): Project!
   }
 

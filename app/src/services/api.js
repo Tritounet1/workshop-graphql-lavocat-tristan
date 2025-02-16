@@ -1,13 +1,7 @@
-import {ApolloClient, gql, InMemoryCache} from "@apollo/client";
-
-const API_ENDPOINT = "http://localhost:5050/api"
+import {client} from "./apolloClient.js";
+import {gql} from "@apollo/client";
 
 export const getProjectById = async (id) => {
-    const client = new ApolloClient({
-        uri: API_ENDPOINT,
-        cache: new InMemoryCache(),
-    });
-
     try {
         const response = await client.query({
             query: gql`
@@ -21,23 +15,16 @@ export const getProjectById = async (id) => {
           }
         }
       `,
-            variables: {
-                "id": id,
-            },
+            variables: { id },
         });
         return response.data.project;
     } catch (err) {
-        console.error('Erreur dans la requête :', err);
+        console.error("Erreur dans la requête :", err);
         return null;
     }
 };
 
 export const getCommentsByProjectId = async (id) => {
-    const client = new ApolloClient({
-        uri: API_ENDPOINT,
-        cache: new InMemoryCache(),
-    });
-
     try {
         const response = await client.query({
             query: gql`
@@ -50,23 +37,16 @@ export const getCommentsByProjectId = async (id) => {
           }
         }
       `,
-            variables: {
-                "id": id,
-            },
+            variables: { id },
         });
         return response.data.comment;
     } catch (err) {
-        console.log(err);
+        console.error("Erreur dans la requête :", err);
         return [];
     }
 };
 
 export const getTasksByProjectId = async (id) => {
-    const client = new ApolloClient({
-        uri: API_ENDPOINT,
-        cache: new InMemoryCache(),
-    });
-
     try {
         const response = await client.query({
             query: gql`
@@ -79,23 +59,16 @@ export const getTasksByProjectId = async (id) => {
           }
         }
       `,
-            variables: {
-                "id": id,
-            },
+            variables: { id },
         });
         return response.data.task;
     } catch (err) {
-        console.log(err);
+        console.error("Erreur dans la requête :", err);
         return [];
     }
 };
 
 export const getUserEmailById = async (id) => {
-    const client = new ApolloClient({
-        uri: API_ENDPOINT,
-        cache: new InMemoryCache(),
-    });
-
     try {
         const response = await client.query({
             query: gql`
@@ -103,44 +76,33 @@ export const getUserEmailById = async (id) => {
           user(id: $id)
         }
       `,
-            variables: {
-                "id": id,
-            },
+            variables: { id },
         });
         return response.data.user;
     } catch (err) {
-        console.error('Erreur dans la requête :', err);
+        console.error("Erreur dans la requête :", err);
         return null;
     }
 };
 
 export const login = async (email, password) => {
-    const client = new ApolloClient({
-        uri: API_ENDPOINT,
-        cache: new InMemoryCache(),
-    });
-
     try {
         const result = await client.mutate({
             mutation: gql`
-              mutation Login($email: String!, $password: String!) {
-                login(email: $email, password: $password)
-              }
-            `,
-            variables: {
-                email: email,
-                password: password,
-            },
+        mutation Login($email: String!, $password: String!) {
+          login(email: $email, password: $password)
+        }
+      `,
+            variables: { email, password },
         });
 
         if (result.data.login) {
             localStorage.setItem("token", result.data.login);
             return true;
         } else {
-            console.error('Identifiants incorrects.');
+            console.error("Identifiants incorrects.");
             return false;
         }
-
     } catch (err) {
         console.error("Erreur dans la requête :", err);
         return false;
@@ -148,34 +110,154 @@ export const login = async (email, password) => {
 };
 
 export const register = async (email, password) => {
-    const client = new ApolloClient({
-        uri: "http://localhost:5050/api",
-        cache: new InMemoryCache(),
-    });
-
     try {
         const result = await client.mutate({
             mutation: gql`
-              mutation Register($email: String!, $password: String!) {
-                register(email: $email, password: $password)
-              }
-            `,
-            variables: {
-                email: email,
-                password: password,
-            },
+        mutation Register($email: String!, $password: String!) {
+          register(email: $email, password: $password)
+        }
+      `,
+            variables: { email, password },
         });
 
         if (result.data.register) {
             localStorage.setItem("token", result.data.register);
             return true;
         } else {
-            console.error('Failed to register.');
+            console.error("Échec de l'inscription.");
             return false;
         }
-
     } catch (err) {
         console.error("Erreur dans la requête :", err);
         return false;
     }
 };
+
+export const getProjects = async () => {
+    try {
+        const response = await client.query({
+            query: gql`
+        query GetProjects {
+          projects {
+            id
+            name
+            description
+            lastUpdate
+            createdAt
+          }
+        }
+      `,
+        });
+        return response.data.projects;
+    } catch (err) {
+        console.error("Erreur dans la requête :", err);
+        alert("Une erreur est survenue lors de la connexion.");
+        return [];
+    }
+};
+
+export const createComment = async (authorId, text, projectId) => {
+    try {
+        const result = await client.mutate({
+            mutation: gql`
+        mutation CreateComment($author: Int!, $text: String!, $project: Int!) {
+          createComment(author: $author, text: $text, project: $project)
+        }
+      `,
+            variables: {
+                author: authorId,
+                text,
+                project: projectId,
+            },
+        });
+        if (result.data.createComment) {
+            return { success: true };
+        } else {
+            return { success: false, error: "Erreur dans la création du commentaire." };
+        }
+    } catch (err) {
+        console.error("Erreur dans la mutation :", err);
+        return { success: false, error: "Une erreur est survenue lors de la requête." };
+    }
+};
+
+export const createProject = async (name, description) => {
+    try {
+        const result = await client.mutate({
+            mutation: gql`
+        mutation CreateProject($name: String!, $description: String!) {
+          createProject(name: $name, description: $description)
+        }
+      `,
+            variables: {
+                name,
+                description,
+            },
+        });
+        if (result.data.createProject) {
+            return { success: true };
+        } else {
+            return { success: false, error: "Erreur lors de la création du projet." };
+        }
+    } catch (error) {
+        console.error("Erreur dans la mutation :", error);
+        return { success: false, error: "Une erreur est survenue lors de la requête." };
+    }
+};
+
+export const updateTaskState = async (taskId, newState, lastState) => {
+    if (newState === lastState) {
+        return { success: false, error: "L'état n'a pas changé." };
+    }
+    try {
+        const result = await client.mutate({
+            mutation: gql`
+        mutation UpdateTaskState($id: ID!, $state: String!) {
+          updateTaskState(id: $id, state: $state)
+        }
+      `,
+            variables: {
+                id: taskId,
+                state: newState,
+            },
+        });
+        if (result.data.updateTaskState) {
+            return { success: true };
+        } else {
+            return { success: false, error: "Erreur lors de la mise à jour de l'état de la tâche." };
+        }
+    } catch (err) {
+        console.error("Erreur dans la mutation :", err);
+        return { success: false, error: "Une erreur est survenue lors de la requête." };
+    }
+};
+
+export const createTask = async (title, projectId) => {
+    if (!title || !projectId) {
+        return { success: false, error: "Veuillez compléter tous les champs requis." };
+    }
+
+    try {
+        const result = await client.mutate({
+            mutation: gql`
+        mutation CreateTask($title: String!, $project: Int!) {
+          createTask(title: $title, project: $project)
+        }
+      `,
+            variables: {
+                title,
+                project: projectId,
+            },
+        });
+
+        if (result.data.createTask) {
+            return { success: true };
+        } else {
+            return { success: false, error: "Erreur lors de la création de la tâche." };
+        }
+    } catch (error) {
+        console.error("Erreur dans la mutation :", error);
+        return { success: false, error: "Une erreur est survenue lors de la requête." };
+    }
+};
+

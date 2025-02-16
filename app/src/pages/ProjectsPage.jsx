@@ -1,40 +1,13 @@
 import { Link } from 'react-router-dom';
 import { PlusCircle, Search } from 'lucide-react';
 import { ProjectCard } from '../components/ProjectCard';
-import {ApolloClient, gql, InMemoryCache} from '@apollo/client';
 import { useEffect, useState } from 'react';
 import ProjectModal from "../components/ProjectModal.jsx";
+import {getProjects} from "../services/api.js";
 
 export const ProjectsPage = () => {
   const [projects, setProjects] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const getProjects = async () => {
-    const client = new ApolloClient({
-      uri: 'http://localhost:5050/api',
-      cache: new InMemoryCache(),
-    });
-    try {
-      const response = await client.query({
-        query: gql`
-          {
-            projects {
-              id
-              name
-              description
-              lastUpdate
-              createdAt
-            }
-          }
-        `,
-      });
-      return response.data.projects;
-    } catch (err) {
-      console.error('Erreur dans la requête :', err);
-      alert('Une erreur est survenue lors de la connexion.');
-      return [];
-    }
-  };
 
   useEffect(() => {
     const fetchProjects = async () => {

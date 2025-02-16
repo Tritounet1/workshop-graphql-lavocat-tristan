@@ -60,6 +60,9 @@ export const createProject = async (name: string, description: string) => {
 }
 
 const deleteProject = async (id: number) => {    try {
+    /*
+        LA BD SUPPRIME AUTOMATIQUEMENT EN CASCADE LES COMMENTAIRES ET TACHES QUI SONT LIES A UN PROJET
+     */
     const query = 'DELETE FROM Project WHERE id = $1';
     const values = [id];
     const result = await client.query(query, values);

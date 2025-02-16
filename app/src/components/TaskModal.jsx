@@ -1,54 +1,32 @@
-import {ApolloClient, gql, InMemoryCache} from "@apollo/client";
 import {useState} from "react";
 import PropTypes from "prop-types";
+import {createTask} from "../services/api.js";
 
 const TaskModal = ({ projectId, setIsModalOpen }) => {
     const [formData, setFormData] = useState({ title: '' });
     const [error, setError] = useState('');
 
-    const handleNewTask = () => {
+    const handleNewTask = async () => {
         if (!formData.title) {
-            setError('Veuillez remplir tous les champs.');
+            setError("Veuillez remplir tous les champs.");
             return;
         }
-
-        setError('')
-
-        const client = new ApolloClient({
-            uri: 'http://localhost:5050/api',
-            cache: new InMemoryCache(),
-        });
-
-        client
-            .mutate({
-                mutation: gql`
-          mutation createTask($title: String!, $project: Int!) {
-            createTask(title: $title, project: $project)
-          }
-        `,
-                variables: {
-                    title: formData.title,
-                    project: projectId,
-                },
-            })
-            .then((result) => {
-                console.log(result);
-                console.log(result.data);
-                if (result) {
-                    setIsModalOpen(false);
-                    setFormData({ title: '', });
-                    window.location.reload();
-                } else {
-                    alert("Erreur dans la création d'une tâche.");
-                }
-            })
-            .catch((err) => {
-                console.error('Erreur dans la requête :', err);
-                alert('Une erreur est survenue lors de la connexion.');
-            });
-
+        setError("");
+        try {
+            const response = await createTask(formData.title, projectId);
+            if (response.success) {
+                setIsModalOpen(false);
+                setFormData({ title: "" });
+                window.location.reload();
+            } else {
+                console.error(response.error || "Erreur inconnue lors de la création de la tâche.");
+                alert(response.error || "Erreur inconnue lors de la création de la tâche.");
+            }
+        } catch (error) {
+            console.error("Erreur inattendue :", error);
+            alert("Une erreur inattendue est survenue.");
+        }
     };
-
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));

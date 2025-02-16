@@ -1,50 +1,35 @@
-import {ApolloClient, gql, InMemoryCache} from "@apollo/client";
 import {useState} from "react";
 import PropTypes from "prop-types";
+import {createProject} from "../services/api.js";
 
 const ProjectModal = ({ setIsModalOpen }) => {
     const [formData, setFormData] = useState({ name: '', description: '' });
     const [error, setError] = useState('');
 
-    const handleNewProject = () => {
+    const handleNewProject = async () => {
         if (!formData.name || !formData.description) {
-            setError('Veuillez remplir tous les champs.');
+            setError("Veuillez remplir tous les champs.");
             return;
         }
 
-        setError('')
+        setError("");
 
-        const client = new ApolloClient({
-            uri: 'http://localhost:5050/api',
-            cache: new InMemoryCache(),
-        });
+        try {
+            const response = await createProject(formData.name, formData.description);
 
-        client
-            .mutate({
-                mutation: gql`
-          mutation createProject($name: String!, $description: String!) {
-            createProject(name: $name, description: $description)
-          }
-        `,
-                variables: {
-                    name: formData.name,
-                    description: formData.description,
-                },
-            })
-            .then((result) => {
-                if (result.data.createProject) {
-                    setIsModalOpen(false);
-                    setFormData({ name: '', description: '' });
-                    window.location.reload();
-                } else {
-                    alert("Erreur dans la création d'un projet.");
-                }
-            })
-            .catch((err) => {
-                console.error('Erreur dans la requête :', err);
-                alert('Une erreur est survenue lors de la connexion.');
-            });
-
+            if (response.success) {
+                console.log("Projet créé avec succès.");
+                setIsModalOpen(false);
+                setFormData({ name: "", description: "" });
+                window.location.reload();
+            } else {
+                console.error(response.error || "Erreur inconnue lors de la création du projet.");
+                alert(response.error || "Erreur inconnue lors de la création du projet.");
+            }
+        } catch (error) {
+            console.error("Erreur inattendue :", error);
+            alert("Une erreur inattendue est survenue.");
+        }
     };
 
     const handleInputChange = (e) => {

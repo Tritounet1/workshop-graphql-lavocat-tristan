@@ -1,7 +1,6 @@
 import { client } from "../app";
 import {User} from "../types";
-import jwt from "jsonwebtoken";
-import { hashPassword, comparePassword } from "../utils";
+import {hashPassword, comparePassword, createTokenFromJson} from "../utils";
 
 const getUsers = async () => {
     try {
@@ -53,24 +52,14 @@ export const createUser = async (email: string, password: string) => {
     }
 }
 
-const createTokenFromJson = (jsonData: any, options={}) => {
-    try {
-        const secretKey = "test";
-        return jwt.sign(jsonData, secretKey, options);
-    }catch (err) {
-        console.error('Erreur lors de token:', err);
-        return null;
-    }
-
-}
-
 export const userMutation = {
     login: async ({ email, password }: { email: string; password: string }) => {
         try {
             const users = await getUsers();
             const user = users?.find((user) => user.email === email && comparePassword(password, user.password)) !== undefined
             if(user) {
-                const token = createTokenFromJson({ email: email, password: password });
+                const role  = users?.find!((user) => user.email === email)?.role;
+                const token = createTokenFromJson({ email: email, role: role });
                 if(token) {
                     return token;
                 }
@@ -90,7 +79,7 @@ export const userMutation = {
         try {
             const result = await createUser(email, password);
             if(result) {
-                const token = createTokenFromJson({ email: email, password: password });
+                const token = createTokenFromJson({ email: email, role: 'USER' });
                 if(token) {
                     return token;
                 }
