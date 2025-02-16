@@ -17,6 +17,9 @@ export const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if(formData.email === '' || formData.password === '') {
+      setShowModal(true);
+    }
     const success = await login(formData.email, formData.password);
     if (success) {
       navigate('/');

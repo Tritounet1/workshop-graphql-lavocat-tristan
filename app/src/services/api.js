@@ -137,13 +137,12 @@ export const login = async (email, password) => {
             localStorage.setItem("token", result.data.login);
             return true;
         } else {
-            alert('Identifiants incorrects.');
+            console.error('Identifiants incorrects.');
             return false;
         }
 
     } catch (err) {
         console.error("Erreur dans la requête :", err);
-        alert('Une erreur est survenue lors de la connexion.');
         return false;
     }
 };
@@ -171,13 +170,12 @@ export const register = async (email, password) => {
             localStorage.setItem("token", result.data.register);
             return true;
         } else {
-            alert('Failed to register.');
+            console.error('Failed to register.');
             return false;
         }
 
     } catch (err) {
         console.error("Erreur dans la requête :", err);
-        alert('Une erreur est survenue lors de l\'inscription.');
         return false;
     }
 };

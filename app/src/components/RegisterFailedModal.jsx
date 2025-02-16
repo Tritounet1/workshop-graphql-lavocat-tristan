@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 
-const ConnectionFailedModal = ({ setShowModal }) => {
+const RegisterFailedModal = ({ setShowModal }) => {
 
     return(
         <div
@@ -12,11 +12,11 @@ const ConnectionFailedModal = ({ setShowModal }) => {
                 onClick={(e) => e.stopPropagation()}
             >
                 <img
-                    src={"connection-failed.gif"}
+                    src={"register-failed.gif"}
                     alt="Error gif"
                     className="mx-auto mb-4"
                 />
-                <p className="text-lg font-bold text-gray-800 mb-4">Identifiants incorrectes, veuillez réessayer.</p>
+                <p className="text-lg font-bold text-gray-800 mb-4">Erreur rencontrée lors de votre enregistrement.</p>
                 <button
                     className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
                     onClick={() => { setShowModal(false) }}
@@ -28,8 +28,8 @@ const ConnectionFailedModal = ({ setShowModal }) => {
     );
 }
 
-ConnectionFailedModal.propTypes = {
+RegisterFailedModal.propTypes = {
     setShowModal: PropTypes.func.isRequired,
 };
 
-export default ConnectionFailedModal;
+export default RegisterFailedModal;

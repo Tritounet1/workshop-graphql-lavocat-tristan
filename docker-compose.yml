@@ -36,6 +36,10 @@ services:
       POSTGRES_PASSWORD: example
       POSTGRES_DB: app
     volumes:
+      - ./task-management-data:/var/lib/postgresql/data
       - ./docker/database/init-database.sql:/docker-entrypoint-initdb.d/init-database.sql
     ports:
       - "5432:5432"
+
+volumes:
+  task-management-data:

@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { register} from "../services/api.js";
+import RegisterFailedModal from "../components/RegisterFailedModal.jsx";
 
 export const SignupPage = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: '', password: '' });
+  const [showModal, setShowModal] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -15,13 +17,15 @@ export const SignupPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if(formData.email === '' || formData.password === '') {
+      setShowModal(true);
+    }
     register(formData.email, formData.password).then((data) => {
       if(data === true) {
         navigate('/');
       }
       else {
-        // TODO throw message error
-        alert(data);
+        setShowModal(true);
       }
     });
   };
@@ -63,6 +67,10 @@ export const SignupPage = () => {
           Connectez-vous
         </Link>
       </p>
+      {/* Modal */}
+      {showModal && (
+          <RegisterFailedModal setShowModal={setShowModal} />
+      )}
     </div>
   );
 }
