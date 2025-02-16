@@ -1,5 +1,7 @@
-import { Folder, ChevronRight, Clock } from 'lucide-react';
+import { Folder, ChevronRight, Clock, Trash } from 'lucide-react';
 import PropTypes from "prop-types";
+import {useEffect, useState} from "react";
+import {deleteProject, getUserRole} from "../services/api.js";
 
 const getRelativeTime = (dateInput) => {
     if (!dateInput) return "Date inconnue";
@@ -19,6 +21,28 @@ const getRelativeTime = (dateInput) => {
 };
 
 export const ProjectCard = ({ project }) => {
+
+    const [userRole, setUserRole] = useState("");
+
+    const handleDeleteProject = (id, e) => {
+        e.preventDefault();
+        deleteProject(id).then((r) => {
+            if (r.success) {
+                location.reload();
+            }
+            else {
+                console.log(r.error);
+            }
+        });
+
+    }
+
+    useEffect(() => {
+        getUserRole().then((role) => {
+            setUserRole(role);
+        });
+    }, []);
+
     return (
         <div className="group bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-all duration-200">
             <div className="flex items-start justify-between mb-4">
@@ -31,9 +55,22 @@ export const ProjectCard = ({ project }) => {
                 <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-indigo-600 transition-colors duration-200" />
             </div>
             <p className="text-gray-600 mb-4">{project.description}</p>
-            <div className="flex items-center text-sm text-gray-500">
-                <Clock className="h-4 w-4 mr-1" />
-                <span>{getRelativeTime(project.lastUpdate)}</span>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+                <div className="flex items-center">
+                    <Clock className="h-4 w-4 mr-1" />
+                    <span>{getRelativeTime(project.lastUpdate)}</span>
+                </div>
+                {userRole === "ADMIN" ? (
+                    <div>
+                        <button
+                            onClick={(e) => {
+                                handleDeleteProject(project.id, e);
+                            }}
+                        >
+                            <Trash />
+                        </button>
+                    </div>
+                ) : null}
             </div>
         </div>
     );

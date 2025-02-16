@@ -23,6 +23,8 @@ declare global {
   }
 }
 
+const PORT = 5050;
+
 
 export const client = new Client(DB_CONFIG);
 
@@ -93,8 +95,6 @@ app.use(async (req, res, next) => {
     res.status(500).send("Erreur de connexion à la base de données");
   }
 });
-
-const PORT = 5050;
 
 app.listen(PORT, async () => {
   console.log(`Server is running on http://localhost:${PORT}/graphql`);

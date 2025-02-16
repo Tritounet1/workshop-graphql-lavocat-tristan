@@ -38,7 +38,7 @@ export const getUserInfo = async () => {
     }
 }
 
-const getUserRole = async () => {
+export const getUserRole = async () => {
     try {
         const response = await client.query({
             query: gql`
@@ -264,6 +264,40 @@ export const createProject = async (name, description) => {
             return { success: true };
         } else {
             return { success: false, error: "Erreur lors de la création du projet." };
+        }
+    } catch (error) {
+        console.error("Erreur dans la mutation :", error);
+        return { success: false, error: "Une erreur est survenue lors de la requête." };
+    }
+};
+
+export const deleteProject = async (id) => {
+    const role = await getUserRole();
+
+    if (!role) {
+        return { success: false, error: "Impossible de supprimer un projet sans être admin." };
+    }
+    if (role !== "ADMIN") {
+        return { success: false, error: "Impossible de supprimer un projet sans être admin." };
+    }
+
+    try {
+
+        const result = await client.mutate({
+            mutation: gql`
+        mutation DeleteProject($id: ID!) {
+          deleteProject(id: $id)
+        }
+      `,
+            variables: {
+                id,
+            },
+        });
+        console.log(result);
+        if (result) {
+            return { success: true };
+        } else {
+            return { success: false, error: "Erreur lors de la suppréssion du projet." };
         }
     } catch (error) {
         console.error("Erreur dans la mutation :", error);

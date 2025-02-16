@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import ProjectModal from "../components/ProjectModal.jsx";
 import {getProjects} from "../services/api.js";
 
+const SUBSCRIPTIONS = ["PROJECT_CREATE", "PROJECT_DELETE"];
+
 export const ProjectsPage = () => {
   const [projects, setProjects] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);

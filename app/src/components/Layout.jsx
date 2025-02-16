@@ -10,6 +10,7 @@ export const Layout = ({ children }) => {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    setFormData({ email: "", role: "" });
     navigate('/login');
   };
 
