@@ -9,6 +9,13 @@ npm i --save-dev @types/bcryptjs
 const SECRET = 'test';
 const salt = bcrypt.genSaltSync(10);
 
+export interface TokenData {
+    id: number;
+    email: string;
+    role: string;
+    iat: number;
+}
+
 export const hashPassword = (password: string) => {
     return bcrypt.hashSync(password, salt);
 }
@@ -27,6 +34,17 @@ export const createTokenFromJson = (jsonData: any, options={}) => {
 
 }
 
-export const getTokenData = (token: string) => {
-    return jwt.verify(token, SECRET);
-}
+export const getTokenData = (token: string): TokenData | null => {
+    try {
+        const decoded = jwt.verify(token, SECRET);
+
+        if (typeof decoded === "string") {
+            return null;
+        }
+
+        return decoded as TokenData;
+    } catch (error) {
+        console.error("Invalid token:", error);
+        return null;
+    }
+};

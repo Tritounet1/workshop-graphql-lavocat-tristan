@@ -19,6 +19,7 @@ export const LoginPage = () => {
     e.preventDefault();
     if(formData.email === '' || formData.password === '') {
       setShowModal(true);
+      return;
     }
     const success = await login(formData.email, formData.password);
     if (success) {
@@ -29,7 +30,7 @@ export const LoginPage = () => {
   };
 
   return (
-      <div className="max-w-md mx-auto mt-10 bg-white rounded-lg shadow-md p-6 relative">
+      <div className="max-w-md mx-auto mt-48 bg-white rounded-lg shadow-md p-6 relative">
         <h2 className="text-2xl font-bold text-center text-gray-900 mb-6">Connexion</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

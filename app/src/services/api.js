@@ -1,6 +1,61 @@
 import {client} from "./apolloClient.js";
 import {gql} from "@apollo/client";
 
+const getUserId = async () => {
+    try {
+        const response = await client.query({
+            query: gql`
+            query {
+              me {
+                id
+              }
+            }
+      `,
+        });
+        return response.data.me.id;
+    } catch (err) {
+        console.error("Erreur dans la requête :", err);
+        return null;
+    }
+}
+
+export const getUserInfo = async () => {
+    try {
+        const response = await client.query({
+            query: gql`
+            query {
+              me {
+                email
+                role
+              }
+            }
+      `,
+        });
+        return response.data.me;
+    } catch (err) {
+        console.error("Erreur dans la requête :", err);
+        return null;
+    }
+}
+
+const getUserRole = async () => {
+    try {
+        const response = await client.query({
+            query: gql`
+            query {
+              me {
+                role
+              }
+            }
+      `,
+        });
+        return response.data.me.role;
+    } catch (err) {
+        console.error("Erreur dans la requête :", err);
+        return null;
+    }
+}
+
 export const getProjectById = async (id) => {
     try {
         const response = await client.query({
@@ -156,8 +211,10 @@ export const getProjects = async () => {
     }
 };
 
-export const createComment = async (authorId, text, projectId) => {
+export const createComment = async (text, projectId) => {
     try {
+        const authorId = await getUserId();
+
         const result = await client.mutate({
             mutation: gql`
         mutation CreateComment($author: Int!, $text: String!, $project: Int!) {
@@ -165,7 +222,7 @@ export const createComment = async (authorId, text, projectId) => {
         }
       `,
             variables: {
-                author: authorId,
+                author: Number(authorId),
                 text,
                 project: projectId,
             },
@@ -182,6 +239,15 @@ export const createComment = async (authorId, text, projectId) => {
 };
 
 export const createProject = async (name, description) => {
+    const role = await getUserRole();
+
+    if (!role) {
+        return { success: false, error: "Impossible de créer un projet sans être admin." };
+    }
+    if (role !== "ADMIN") {
+        return { success: false, error: "Impossible de créer un projet sans être admin." };
+    }
+
     try {
         const result = await client.mutate({
             mutation: gql`
@@ -260,4 +326,3 @@ export const createTask = async (title, projectId) => {
         return { success: false, error: "Une erreur est survenue lors de la requête." };
     }
 };
-

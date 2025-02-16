@@ -9,7 +9,6 @@ import ProtectedRoutes from "./components/ProtectedRoutes.jsx";
 
 function App() {
     return (
-        <Layout>
             <Routes>
                 <Route path="/login" element={
                         <ProtectedRoutes>
@@ -26,22 +25,25 @@ function App() {
                 <Route
                     path="/"
                     element={
-                        <ProtectedRoutes>
-                            <ProjectsPage />
-                        </ProtectedRoutes>
+                        <Layout>
+                            <ProtectedRoutes>
+                                <ProjectsPage />
+                            </ProtectedRoutes>
+                        </Layout>
                     }
                 />
                 <Route
                     path="/projects/:projectId"
                     element={
-                        <ProtectedRoutes>
-                            <ProjectDetailsPage />
-                        </ProtectedRoutes>
+                        <Layout>
+                            <ProtectedRoutes>
+                                <ProjectDetailsPage />
+                            </ProtectedRoutes>
+                        </Layout>
                     }
                 />
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>
-        </Layout>
     );
 }
 

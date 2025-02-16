@@ -19,6 +19,7 @@ export const SignupPage = () => {
     e.preventDefault();
     if(formData.email === '' || formData.password === '') {
       setShowModal(true);
+      return;
     }
     register(formData.email, formData.password).then((data) => {
       if(data === true) {
@@ -31,7 +32,7 @@ export const SignupPage = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 bg-white rounded-lg shadow-md p-6">
+    <div className="max-w-md mx-auto mt-48 bg-white rounded-lg shadow-md p-6">
       <h2 className="text-2xl font-bold text-center text-gray-900 mb-6">Inscription</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>

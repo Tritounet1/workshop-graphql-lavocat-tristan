@@ -11,6 +11,7 @@ export const schema = buildSchema(`#graphql
     task(id: ID!): [Task!]!
     comment(id: ID!): [Comment!]
     user(id: ID!): String!
+    me: User!
   }
 
   type Mutation {

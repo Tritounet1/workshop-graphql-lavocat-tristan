@@ -143,7 +143,7 @@ export const ProjectDetailsPage = () => {
           <TaskModal projectId={Number(projectId)} setIsModalOpen={setIsTaskModalOpen} />
       )}
       {isCommentModalOpen && (
-          <CommentModal authorId={1} projectId={Number(projectId)} setIsModalOpen={setIsCommentModalOpen} />
+          <CommentModal projectId={Number(projectId)} setIsModalOpen={setIsCommentModalOpen} />
       )}
     </div>
   );

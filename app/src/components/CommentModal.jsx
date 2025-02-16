@@ -2,7 +2,7 @@ import {useState} from "react";
 import PropTypes from "prop-types";
 import {createComment} from "../services/api.js";
 
-const CommentModal = ({ authorId, projectId, setIsModalOpen }) => {
+const CommentModal = ({ projectId, setIsModalOpen }) => {
     const [formData, setFormData] = useState({ text: '' });
     const [error, setError] = useState('');
 
@@ -15,7 +15,7 @@ const CommentModal = ({ authorId, projectId, setIsModalOpen }) => {
         setError("");
 
         try {
-            const response = await createComment(authorId, formData.text, projectId);
+            const response = await createComment(formData.text, projectId);
 
             if (response.success) {
                 console.log("Commentaire créé avec succès.");

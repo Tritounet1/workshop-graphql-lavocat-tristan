@@ -29,17 +29,39 @@ const getUserEmail = async (id: number) => {
     }
 };
 
-export const userResolver = {
-    user: ({ id }: { id: string | number }) => getUserEmail(Number(id)),
-    users: () => getUsers(),
+const hasAccess = async (context: any) => {
+    if (!context.user) {
+        throw new Error("Accès interdit : Vous devez être authentifié pour accéder à cette requête.");
+    }
+
+    return {
+        id: context.user.id,
+        email: context.user.email,
+        role: context.user.role,
+    };
+};
+
+/*
+    FONCTIONNEL MAIS INCOMPREHENSIBLE CODE, TODO COMMENT PASSER UN CONTEXT GRAPHQL A SES RESOLVERS EN PROPRE
+ */
+const me = (parent: any, args: any, context: any) => {
+    return hasAccess(args);
 };
 
 
-export const createUser = async (email: string, password: string) => {
+export const userResolver = {
+    user: ({ id }: { id: string | number }) => getUserEmail(Number(id)),
+    users: () => getUsers(),
+    me: (parent: any, args: any, context: any) => me(parent, args, context),
+};
+
+
+
+export const createUser = async (email: string, password: string, role: string) => {
     try {
         const query = 'INSERT INTO UserAccount(email, password, role) VALUES ($1, $2, $3)';
         const hashedPassword = hashPassword(password);
-        const values = [email, hashedPassword, 'USER'];
+        const values = [email, hashedPassword, role];
         const result = await client.query(query, values);
         if (result) {
             return true;
@@ -58,8 +80,9 @@ export const userMutation = {
             const users = await getUsers();
             const user = users?.find((user) => user.email === email && comparePassword(password, user.password)) !== undefined
             if(user) {
+                const id  = users?.find!((user) => user.email === email)?.id;
                 const role  = users?.find!((user) => user.email === email)?.role;
-                const token = createTokenFromJson({ email: email, role: role });
+                const token = createTokenFromJson({ id: id, email: email, role: role });
                 if(token) {
                     return token;
                 }
@@ -77,9 +100,13 @@ export const userMutation = {
     },
     register: async ({ email, password }: { email: string, password: string }) => {
         try {
-            const result = await createUser(email, password);
+            const result = await createUser(email, password, 'USER');
             if(result) {
-                const token = createTokenFromJson({ email: email, role: 'USER' });
+                const users = await getUsers();
+                const id  = users?.find!((user) => user.email === email)?.id;
+                const role  = users?.find!((user) => user.email === email)?.role;
+
+                const token = createTokenFromJson({ id: id, email: email, role: role });
                 if(token) {
                     return token;
                 }

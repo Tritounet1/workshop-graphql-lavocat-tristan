@@ -14,15 +14,15 @@ import {createProject} from "./resolvers/projectResolver";
 import {createComment} from "./resolvers/commentResolver";
 import {getTokenData} from "./utils";
 
-
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
-      user?: unknown;
+      user?: { id: number; email: string; role: string; iat: number };
     }
   }
 }
+
 
 export const client = new Client(DB_CONFIG);
 
@@ -57,26 +57,29 @@ const rootValue = {
  */
 app.use(async (req, res, next) => {
   const authHeader = req.headers.authorization;
-  console.log("test autorisation : ");
-  console.log(authHeader);
 
   if (authHeader) {
     const token = authHeader.split(" ")[1];
-    try {
-      req.user = getTokenData(token);
-      console.log(req.user);
-    } catch (err) {
-      console.error("Invalid token:", err);
+    const user = getTokenData(token);
+
+    if (user) {
+      req.user = user;
+    } else {
+      console.warn("Invalid token received.");
     }
   }
 
   next();
 });
 
-app.use('/api', graphqlHTTP({
-  schema,
-  rootValue,
-  graphiql: true,
+app.use('/api', graphqlHTTP((req) => {
+  const expressReq = req as express.Request;
+  return {
+    schema,
+    rootValue,
+    graphiql: true,
+    context: { user: expressReq.user },
+  };
 }));
 
 /*
@@ -101,11 +104,19 @@ app.listen(PORT, async () => {
     return;
   }
   /* CREATING DEFAULT USER */
-  createUser("test@gmail.com", "1234").then(r => {
+  createUser("user@gmail.com", "user", "USER").then(r => {
     if (r) {
-      console.log("Default user create, email: test@gmail.com, password: 1234");
+      console.log("User create, email: test@gmail.com, password: 1234");
     } else {
-      console.log("Can't create default user.")
+      console.log("Can't create user.")
+    }
+  });
+  /* CREATING ADMIN USER */
+  createUser("admin@gmail.com", "admin", "ADMIN").then(r => {
+    if (r) {
+      console.log("Admin create, email: admin@gmail.com, password: admin");
+    } else {
+      console.log("Can't create admin.")
     }
   });
   /* CREATING PROJECT EXAMPLE */

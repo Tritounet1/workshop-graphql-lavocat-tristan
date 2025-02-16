@@ -6,18 +6,32 @@
 
 ## L'application :
 
+### Docker
+
+#### Services
+
 L'application est entièrement dockerisée, on trouve 3 services dans le docker-compose.yml :
 - task-management-app (Frontend de l'application React)
 - task-management-api (Backend de l'application GraphQL)
 - task-management-database (Base de donnée PostgresSQL)
 
-Pour lancer l'application
+#### Volumes
+
+Et un volume :
+- task-management-data
+
+Ce volume contient la base de données, il est utilisé pour persister les données quand le docker est supprimé et recréer.
+
+### Lancer l'application
 
 `docker compose up --build -d`
 
-L'application à aussi une CI lors des push et merge request sur main.
+### CI
+
+L'application à une CI lors des push et merge request sur main.
 .github/workflows/ci.yml.
 Un lint est lancé sur le frontend et sur le backend.
+
 
 
 ## frontend : 
@@ -25,9 +39,25 @@ Un lint est lancé sur le frontend et sur le backend.
 ![Frontend](./assets/frontend.gif)
 
 ### URL :
+
+Pour accéder au frontend :
+
 `http://localhost:5173`
 
-## Technologies utilisées
+### Identifiants :
+
+Compte `USER` :
+user@gmail.com
+user
+
+Compte `ADMIN` :
+admin@gmail.com
+admin
+
+
+Le rôle et l'email sont affichés en haut à droite de la page, à coté du bouton déconnexion.
+
+### Technologies utilisées
 
 - **React** : bibliothèque JavaScript pour construire des interfaces utilisateur.
 - **Vite** : outil de build rapide pour les projets front-end.
@@ -46,15 +76,17 @@ Un lint est lancé sur le frontend et sur le backend.
 ### URL :
 `http://localhost:5050`
 
-## Technologies utilisées
+### Technologies utilisées
 
-- **TypeScript** : c'est un langage de programmation qui a pour but d'améliorer et de sécuriser la production de code JavaScript. Il s'agit d'un sur-ensemble syntaxique strict de JavaScript.
-- **NodeJs** : c'est un environnement d’exécution single-thread, open-source et multi-plateforme permettant de créer des applications rapides et évolutives côté serveur.
-- **Express** : Express est un framework minimal pour Node.js qui facilite la création et la gestion d'un serveur HTTP.
-- **Expres-GraphQL** : express-graphql est une bibliothèque qui s'intègre à Express pour configurer un serveur GraphQL.
-- **GraphQL** : GraphQL est un langage de requêtes pour les APIs qui donne aux clients la possibilité de spécifier exactement les données dont ils ont besoin. Contrairement aux APIs REST traditionnelles, GraphQL utilise un schéma unique où toutes les données disponibles peuvent être interrogées ou modifiées via des requêtes (queries) ou mutations.
-- **Cors** : "CORS" (Cross-Origin Resource Sharing) est un mécanisme de sécurité qui contrôle comment des ressources front-end exécutées dans un navigateur peuvent interagir avec des ressources sur un autre domaine.
-- **Pg** : Pg (ou node-postgres) est une bibliothèque permettant une interaction avec une base de données PostgreSQL depuis Node.js. Elle offre des méthodes pour exécuter des requêtes SQL, gérer des connexions, ...
+- **TypeScript** : est un langage de programmation qui a pour but d'améliorer et de sécuriser la production de code JavaScript. Il s'agit d'un sur-ensemble syntaxique strict de JavaScript.
+- **NodeJs** : est un environnement d’exécution single-thread, open-source et multi-plateforme permettant de créer des applications rapides et évolutives côté serveur.
+- **Express** : est un framework minimal pour Node.js qui facilite la création et la gestion d'un serveur HTTP.
+- **Expres-GraphQL** : est une bibliothèque qui s'intègre à Express pour configurer un serveur GraphQL.
+- **GraphQL** : est un langage de requêtes pour les APIs qui donne aux clients la possibilité de spécifier exactement les données dont ils ont besoin. Contrairement aux APIs REST traditionnelles, GraphQL utilise un schéma unique où toutes les données disponibles peuvent être interrogées ou modifiées via des requêtes (queries) ou mutations.
+- **Cors** : "(Cross-Origin Resource Sharing) est un mécanisme de sécurité qui contrôle comment des ressources front-end exécutées dans un navigateur peuvent interagir avec des ressources sur un autre domaine.
+- **Pg** : (ou node-postgres) est une bibliothèque permettant une interaction avec une base de données PostgreSQL depuis Node.js. Elle offre des méthodes pour exécuter des requêtes SQL, gérer des connexions, ...
+- **jwt** : (JSON Web Token) est une bibliothèque qui permet de générer, signer et vérifier des jetons (tokens) pour l'authentification. Elle est couramment utilisée pour la gestion des sessions, afin de sécuriser les échanges entre le client et le serveur.
+- **bcrypt** : est une bibliothèque qui permet de hacher et de verifier des mots de passe de manière sécurisée. Elle est conçue pour être lente et protéger efficacement les données contre les attaques de type force brute.
 
 
 ## GraphQL
@@ -121,15 +153,30 @@ task(id: ID!): Task!
 ### Les mutations 
 
 ```
-login(email: String!, password: String!): Boolean!
-register(email: String!, password: String!): Boolean!
-createProject(name: String!, description: String!): Boolean!
-createTask(title: String!, project: Int!): Boolean!
-createComment(author: Int!, text: String!, project: Int!): Boolean!
-updateProjectDate(id: ID!): Boolean!
-deleteProject(id: ID!): Boolean
-updateTaskState(id: ID!, state: String!): Boolean!
-deleteTask(id: ID!): Boolean!
+ login(email: String!, password: String!): String!
+ register(email: String!, password: String!): String!
+ 
+ createProject(name: String!, description: String!): Boolean!
+ createTask(title: String!, project: Int!): Boolean!
+ createComment(author: Int!, text: String!, project: Int!): Boolean!
+ updateProjectDate(id: ID!): Boolean!
+ updateTaskState(id: ID!, state: String!): Boolean!
+ deleteTask(id: ID!): Boolean!
+ deleteComment(id: ID!): Boolean!
+ deleteProject(id: ID!): Boolean!
+```
+
+### Les subscribes 
+
+```
+ createProject(name: String!, description: String!): Project!
+ createTask(title: String!, project: Int!): Task!
+ createComment(author: Int!, text: String!, project: Int!): Comment!
+ updateProjectDate(id: ID!): Project!
+ updateTaskState(id: ID!, state: String!): Task!
+ deleteTask(id: ID!): Task!
+ deleteComment(id: ID!): Comment!
+ deleteProject(id: ID!): Project!
 ```
 
 
@@ -141,11 +188,11 @@ deleteTask(id: ID!): Boolean!
 ### URL :
 `http://localhost:5432`
 
-## Technologies utilisées
+### Technologies utilisées
 
 - **PostgresSQL** : c'est un système de gestion de base de données relationnelle et d'objets.
 
-## Fonctionnement
+### Fonctionnement
 
 La base de donnée est créer grâce au docker-compose, et les tables sont créent grâce au `init-database.sql` dans `docker/database`.
 
@@ -189,8 +236,6 @@ De nombreux outils et bibliothèques GraphQL comme Apollo Server et GraphQL.js s
    Node.js est largement adopté pour le développement de backends modernes grâce à sa rapidité, son évolutivité, et sa compatibilité avec des stacks full JavaScript. Il est utilisé par des entreprises comme Netflix, Uber, LinkedIn.
    Python, bien qu'extrêmement populaire pour des tâches de data science, machine learning et automatisation, est moins utilisé pour des applications web à haute performance en temps réel comme celles que GraphQL peut nécessiter.
 
-### 9. Apprentissage
-
-
 ### Conclusion
-   Après tout ces points le meilleur choix est bien plus intérrésant d'utiliser l'environnement NodeJs que le language Python car JavaScript est le language du web par excellence et est bien plus utilser en entreprise en backend que python.
+   Après tout ces points le meilleur choix ici est JavaScript, car comparé a Python, JavaScript est le language du web par excellence et est bien plus utilser en backend que python.
+   Je préfère aussi utiliser un language plus intérrésant que python.
