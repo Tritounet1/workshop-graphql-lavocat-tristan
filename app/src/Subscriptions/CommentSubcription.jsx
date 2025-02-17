@@ -3,8 +3,8 @@ import PropTypes from "prop-types";
 import { useEffect } from "react";
 
 const NEW_COMMENT_CREATE = gql`
-    subscription CommentAdded($id: ID!) {
-        commentAdded(id: $id) {
+    subscription CommentAdded($project: ID!) {
+        commentAdded(project: $project) {
             id
             text
             author {
@@ -18,19 +18,15 @@ const NEW_COMMENT_CREATE = gql`
 
 const CommentSubscription = ({ projectId, setProject }) => {
     const { data: addedData, error: addedError } = useSubscription(NEW_COMMENT_CREATE, {
-        variables: { id: projectId },
+        variables: { project: projectId },
     });
 
     useEffect(() => {
         if (addedData?.commentAdded) {
-            console.log("NOUVEAU COMMENTAIRE : ", addedData);
-            /* TODO METTRE A JOUR LE SETPROJECT */
-            /*
             setProject((prevProject) => ({
                 ...prevProject,
                 comments: [...prevProject.comments, addedData.commentAdded],
             }));
-             */
         }
     }, [addedData, setProject]);
 

@@ -5,7 +5,6 @@ const PROJECT_ADDED_EVENT = "projectAdded";
 const PROJECT_DELETED_EVENT = "projectDeleted";
 
 export const getUserById = async (id: number) => {
-    console.log(id);
     const query = 'SELECT * FROM UserAccount WHERE id = $1';
     const values = [id];
     const result = await client.query(query, values);
@@ -29,6 +28,7 @@ export const getCommentsPerProjectId = async(project_id : number) => {
     return await client.query(`SELECT * FROM Comment WHERE project_id = ${project_id}`).then((commentsArray) => {
         return commentsArray.rows.map( async(comment: Comment) => {
             const user = await getAuthorById(comment.id);
+            console.log(user);
             return {
                 id: comment.id,
                 author: user,
@@ -97,7 +97,6 @@ export const createProject = async (name: string, description: string) => {
         const values = [name, description, owner_id];
         const result = await client.query(query, values);
         const row = result.rows[0];
-        console.log("ROW : ", row);
         return {
             id: row.id,
             name: row.name,

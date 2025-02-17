@@ -78,7 +78,7 @@ export const taskMutation = {
             const { id, state } = args
             const task = await updateTaskState(id, state);
             if(task) {
-                context.pubsub.publish(TASK_ADDED_EVENT, task);
+                context.pubsub.publish(TASK_UPDATE_EVENT, task);
             }
             return task;
         } catch (error) {

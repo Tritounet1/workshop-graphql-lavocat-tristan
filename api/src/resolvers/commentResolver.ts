@@ -1,5 +1,5 @@
 import { client } from "../client";
-import {Comment, Project} from "../types";
+import {Comment} from "../types";
 
 const COMMENT_ADDED_EVENT = "commentAdded";
 
@@ -23,11 +23,10 @@ export const createComment = async (text: string, project: number) => {
         const query = 'INSERT INTO Comment(author_id, text, project_id) VALUES ($1, $2, $3) RETURNING *';
         const values = [author, text, project];
         const result = await client.query(query, values);
+        console.log(result.rows);
         const formattedResult = {
             id: result.rows[0].id,
-            author: result.rows[0].author,
             text: result.rows[0].text,
-            project: result.rows[0].project,
         }
         return formattedResult;
     } catch (err) {

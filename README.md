@@ -142,12 +142,11 @@ export type Task = {
 ### Les queries
 
 ```
-projects: [Project!]!
-tasks: [Task!]!
-users: [User!]!
-comments: [Comment!]!
-project(id: ID!): Project!
-task(id: ID!): Task!
+ projects: [Project!]! @auth(requires: USER)
+ tasks: [Task!]! @auth(requires: USER)
+ users: [User!]! @auth(requires: ADMIN)
+ comments: [Comment!]! @auth(requires: USER)
+ project(id: ID!): Project! @auth(requires: USER)
 ```
 
 ### Les mutations 
@@ -155,28 +154,28 @@ task(id: ID!): Task!
 ```
  login(email: String!, password: String!): String!
  register(email: String!, password: String!): String!
+ createProject(name: String!, description: String!): Project! @auth(requires: USER)
+ createTask(title: String!, project: Int!): Task! @auth(requires: USER)
+ createComment(text: String!, project: Int!): Comment! @auth(requires: USER)
+ updateProjectDate(id: ID!): Project! 
+ updateTaskState(id: ID!, state: String!): Task! @auth(requires: USER)
+ deleteProject(id: ID!): ID! @auth(requires: USER)
+```
+
+### Les subscriptions
+
+```
+ projectAdded: Project! @auth(requires: USER)
+ projectUpdated: Project! @auth(requires: USER)
+ projectDeleted: ID! @auth(requires: USER)
  
- createProject(name: String!, description: String!): Boolean!
- createTask(title: String!, project: Int!): Boolean!
- createComment(author: Int!, text: String!, project: Int!): Boolean!
- updateProjectDate(id: ID!): Boolean!
- updateTaskState(id: ID!, state: String!): Boolean!
- deleteTask(id: ID!): Boolean!
- deleteComment(id: ID!): Boolean!
- deleteProject(id: ID!): Boolean!
-```
-
-### Les subscribes 
-
-```
- createProject(name: String!, description: String!): Project!
- createTask(title: String!, project: Int!): Task!
- createComment(author: Int!, text: String!, project: Int!): Comment!
- updateProjectDate(id: ID!): Project!
- updateTaskState(id: ID!, state: String!): Task!
- deleteTask(id: ID!): Task!
- deleteComment(id: ID!): Comment!
- deleteProject(id: ID!): Project!
+ taskAdded(project: ID!): Task! @auth(requires: USER)
+ taskUpdated(project: ID!): Task! @auth(requires: USER)
+ taskDeleted(project: ID!): ID! @auth(requires: USER)
+ 
+ commentAdded(project: ID!): Comment! @auth(requires: USER)
+ commentUpdated(project: ID!): Comment! @auth(requires: USER)
+ commentDeleted(project: ID!): ID! @auth(requires: USER)
 ```
 
 
@@ -201,41 +200,14 @@ La base de donnée est créer grâce au docker-compose, et les tables sont crée
 
 ![Versus](./assets/fight.gif)
 
-### 1. Écosystème JavaScript et Popularité
-JavaScript est le langage principal du web, et donc Node.js bénéficie de l'énorme écosystème JavaScript. 
-Travailler déjà en JavaScript pour le frontend (avec React), Node.js permet de garder une cohérence avec le code backend et frontend.
-De nombreux outils et bibliothèques GraphQL comme Apollo Server et GraphQL.js sont optimisés pour Node.js.
+JavaScript est bien meilleur dans le web que cette fraude de Python.
 
-### 2. Performances
-   Node.js est extrêmement rapide et efficace pour les opérations I/O non-bloquantes. Cela fait de Node.js un excellent choix pour des API avec un nombre de requêtes simultanées.
-   En comparaison, Python n’est pas aussi performant pour les opérations I/O non-bloquantes et peut être plus lent dans les scénarios de haute concurrence.
+Il a un écosystème bien meilleur avec nodejs comparé à cette immonde pip.
 
-### 3. Asynchrone par défaut
-   Node.js utilise un modèle asynchrone et non-bloquant pour gérer les I/O. Cela le rend particulièrement adapté pour les API GraphQL, où les requêtes peuvent inclure plusieurs appels à différentes sources de données.
-   Python, bien qu'il supporte également l'asynchrone avec asyncio, a tendance à être plus utilisé de manière synchrone par défaut. Les frameworks comme Django et Flask ne sont pas optimisés pour les applications asynchrones de manière native et pour les applications en production.
+Il permet d'avoir un frontend en React et un backend en Js donc le même language au frontend et backend, ce qui permet une meilleur maintenabilité.
 
-### 4. Écosystème et Frameworks
-   Node.js dispose de plusieurs frameworks populaires et spécialisés dans les API GraphQL, comme :
-   Apollo Server : Un des serveurs GraphQL les plus populaires et puissants dans l'écosystème Node.js.
-   Express-GraphQL : Intégration facile avec Express pour un serveur GraphQL léger.
-   En Python, il existe aussi des solutions mais l'écosystème et la communauté autour de GraphQL ne sont pas aussi larges que sur Node.js.
+Python est connu pour sa lenteur ce qui est un défaut, une api est censée pouvoir supporté beaucoup de requêtes en même temps.
 
-### 5. Gestion des Packages (NPM vs Pip)
-   Node.js utilise npm (Node Package Manager), qui est l'un des gestionnaires de paquets les plus utilisés et propose une vaste collection de bibliothèques. Les bibliothèques modernes et les mises à jour sont généralement mieux supportées dans l’écosystème JavaScript.
-   Python utilise pip, mais Python a aussi un vaste écosystème, certains outils pour Node.js sont souvent plus rapides et plus faciles à intégrer pour GraphQL.
+L'asynchrone sur Javascript est bien mieux géré que sur python.
 
-### 6. Scalabilité
-   Node.js est conçu pour gérer des milliers de connexions simultanées sans ajouter de surcharge supplémentaire en utilisant un seul thread pour gérer tous les événements asynchrones. Cela le rend particulièrement adapté pour les applications qui nécessitent une scalabilité horizontale.
-   Python utilise un modèle de threading ou de processus qui peut entraîner plus de complexité et de surcharge en termes de gestion des ressources pour des applications avec un grand nombre de requêtes simultanées.
-
-### 7. TypeScript et Typage Statique
-   Node.js peut utiliser TypeScript, un sur-ensemble de JavaScript avec typage statique, ce qui aide à éviter les erreurs en temps de développement et améliore la maintenabilité du code. TypeScript est largement adopté dans l’écosystème Node.js, notamment pour des API.
-   Python n'a pas de système de typage statique aussi strict, même si le typage est désormais supporté, mais cela reste moins populaire et répandu que TypeScript dans l'écosystème Node.js.
-
-### 8. Adoption dans l'Industrie
-   Node.js est largement adopté pour le développement de backends modernes grâce à sa rapidité, son évolutivité, et sa compatibilité avec des stacks full JavaScript. Il est utilisé par des entreprises comme Netflix, Uber, LinkedIn.
-   Python, bien qu'extrêmement populaire pour des tâches de data science, machine learning et automatisation, est moins utilisé pour des applications web à haute performance en temps réel comme celles que GraphQL peut nécessiter.
-
-### Conclusion
-   Après tout ces points le meilleur choix ici est JavaScript, car comparé a Python, JavaScript est le language du web par excellence et est bien plus utilser en backend que python.
-   Je préfère aussi utiliser un language plus intérrésant que python.
+Node.js peut utiliser TypeScript, ce qui permet un typage statique et qui aide à éviter les erreurs.

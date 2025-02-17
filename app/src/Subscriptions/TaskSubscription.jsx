@@ -3,8 +3,8 @@ import PropTypes from "prop-types";
 import { useEffect } from "react";
 
 const NEW_TASK_CREATE = gql`
-    subscription CommentAdded($id: ID!) {
-        taskAdded(id: $id) {
+    subscription CommentAdded($project: ID!) {
+        taskAdded(project: $project) {
             id
             title
             state
@@ -13,8 +13,8 @@ const NEW_TASK_CREATE = gql`
 `;
 
 const NEW_TASK_UPDATE = gql`
-    subscription CommentAdded($id: ID!) {
-        taskUpdated(id: $id) {
+    subscription CommentAdded($project: ID!) {
+        taskUpdated(project: $project) {
             id
             title
             state
@@ -24,26 +24,33 @@ const NEW_TASK_UPDATE = gql`
 
 const TaskSubscription = ({ projectId, setProject }) => {
     const { data: addedData, error: addedError } = useSubscription(NEW_TASK_CREATE, {
-        variables: { id: projectId },
+        variables: { project: projectId },
     });
     const { data: updateData, error: updateError } = useSubscription(NEW_TASK_UPDATE, {
-        variables: { id: projectId },
+        variables: { project: projectId },
     });
 
     useEffect(() => {
         if (addedData?.taskAdded) {
-            console.log("NOUVEAU COMMENTAIRE : ", addedData);
-            /* TODO METTRE A JOUR LE SETPROJECT */
+            setProject((prevProject) => ({
+                ...prevProject,
+                tasks: [...prevProject.tasks, addedData.taskAdded],
+            }));
         }
     }, [addedData, setProject]);
 
 
     useEffect(() => {
         if (updateData?.taskUpdated) {
-            console.log("COMMENTAIRE MIS A JOUR : ", updateData);
-            /* TODO METTRE A JOUR LE SETPROJECT */
+            setProject((prevProject) => ({
+                ...prevProject,
+                tasks: prevProject.tasks.map((task) =>
+                    task.id === updateData.taskUpdated.id ? updateData.taskUpdated : task
+                ),
+            }));
         }
     }, [updateData, setProject]);
+
 
     if(addedError) {
         console.error("Erreur de subscription (ajout de tâche) :", addedError);

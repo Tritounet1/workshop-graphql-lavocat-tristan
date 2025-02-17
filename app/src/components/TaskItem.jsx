@@ -36,7 +36,6 @@ export const TaskItem = ({ task }) => {
 
       if (response.success) {
         setIsMenuOpen(false);
-        window.location.reload();
       } else {
         console.error(response.error || "Erreur inconnue lors de la modification de l'état de la tâche.");
         alert(response.error || "Erreur inconnue lors de la modification de l'état de la tâche.");
