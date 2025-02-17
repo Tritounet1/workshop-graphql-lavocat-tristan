@@ -18,7 +18,6 @@ const ProjectModal = ({ setIsModalOpen }) => {
                 console.log("Projet créé avec succès.");
                 setIsModalOpen(false);
                 setFormData({ name: "", description: "" });
-                window.location.reload();
             } else {
                 console.error(response.error || "Erreur inconnue lors de la création du projet.");
                 alert(response.error || "Erreur inconnue lors de la création du projet.");

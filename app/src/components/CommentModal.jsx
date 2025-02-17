@@ -21,7 +21,6 @@ const CommentModal = ({ projectId, setIsModalOpen }) => {
                 console.log("Commentaire créé avec succès.");
                 setIsModalOpen(false);
                 setFormData({ text: "" });
-                window.location.reload();
             } else {
                 console.error(response.error || "Erreur inconnue lors de la création du commentaire.");
                 alert(response.error || "Erreur inconnue lors de la création du commentaire.");

@@ -17,7 +17,6 @@ const TaskModal = ({ projectId, setIsModalOpen }) => {
             if (response.success) {
                 setIsModalOpen(false);
                 setFormData({ title: "" });
-                window.location.reload();
             } else {
                 console.error(response.error || "Erreur inconnue lors de la création de la tâche.");
                 alert(response.error || "Erreur inconnue lors de la création de la tâche.");

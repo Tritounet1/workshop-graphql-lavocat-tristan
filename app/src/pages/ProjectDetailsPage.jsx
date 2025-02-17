@@ -8,6 +8,8 @@ import {
 } from "../services/api.js";
 import TaskModal from "../components/TaskModal.jsx";
 import CommentModal from "../components/CommentModal.jsx";
+import CommentSubscription from "../Subscriptions/CommentSubcription.jsx";
+import TaskSubscription from "../Subscriptions/TaskSubscription.jsx";
 
 export const ProjectDetailsPage = () => {
   const { projectId } = useParams();
@@ -118,6 +120,8 @@ export const ProjectDetailsPage = () => {
       {isCommentModalOpen && (
           <CommentModal projectId={Number(projectId)} setIsModalOpen={setIsCommentModalOpen} />
       )}
+      <CommentSubscription projectId={Number(projectId)} setProject={setProject} />
+      <TaskSubscription projectId={Number(projectId)} setProject={setProject} />
     </div>
   );
 };

@@ -1,5 +1,8 @@
 import { client } from "../client";
-import {Task, TaskState} from "../types";
+import {Project, Task, TaskState} from "../types";
+
+const TASK_ADDED_EVENT = "taskAdded";
+const TASK_UPDATE_EVENT = "taskUpdated";
 
 const getTasks = async () => {
     try {
@@ -26,11 +29,9 @@ export const createTask: (title: string, project: number) => Promise<{
     state: TaskState;
 } | null> = async (title: string, project: number) => {
     try {
-        /* TODO ENREGISTER LE TASK DANS LE PROJECT */
         const query = 'INSERT INTO Task(title, state, project_id) VALUES ($1, $2, $3) RETURNING *';
         const values = [title, 'TO_DO', project];
         const result = await client.query(query, values);
-        console.log(result.rows[0]);
         return {
             id: result.rows[0].id,
             title: result.rows[0].title,
@@ -58,25 +59,50 @@ const updateTaskState = async (id: number, state: string) => {
     }
 };
 
-
 export const taskMutation = {
-    createTask: async (_parent: any, args: { title: string, project: number }) => {
+    createTask: async (_parent: any, args: { title: string, project: number }, context: any) => {
         try {
             const { title, project } = args
-            return await createTask(title, project);
+            const task = await createTask(title, project);
+            if(task) {
+                context.pubsub.publish(TASK_ADDED_EVENT, task);
+            }
+            return task;
         } catch (error) {
             console.error("Erreur lors de la mutation login :", error);
             return false;
         }
     },
-    updateTaskState: async (_parent: any, args: { id: number, state: string }) => {
+    updateTaskState: async (_parent: any, args: { id: number, state: string }, context: any) => {
         try {
             const { id, state } = args
-            console.log(id, "  ", state);
-            return await updateTaskState(id, state);
+            const task = await updateTaskState(id, state);
+            if(task) {
+                context.pubsub.publish(TASK_ADDED_EVENT, task);
+            }
+            return task;
         } catch (error) {
             console.error("Erreur lors de la mutation :", error);
             return false;
         }
     },
 };
+
+export const TaskSubscription = {
+    taskAdded: {
+        subscribe: (_parent: any, _args: any, context: any) => {
+            return context.pubsub.asyncIterableIterator(TASK_ADDED_EVENT);
+        },
+        resolve: (payload: Task) => {
+            return payload;
+        },
+    },
+    taskUpdated: {
+        subscribe: (_parent: any, _args: any, context: any) => {
+            return context.pubsub.asyncIterableIterator(TASK_UPDATE_EVENT);
+        },
+        resolve: (payload: Task) => {
+            return payload;
+        },
+    },
+}

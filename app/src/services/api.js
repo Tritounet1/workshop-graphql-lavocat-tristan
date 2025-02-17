@@ -138,9 +138,7 @@ export const deleteProject = async (id) => {
         const result = await client.mutate({
             mutation: gql`
         mutation DeleteProject($id: ID!) {
-          deleteProject(id: $id) {
-             id
-          }
+          deleteProject(id: $id)
         }
       `,
             variables: {

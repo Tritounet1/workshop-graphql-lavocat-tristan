@@ -28,10 +28,7 @@ export const ProjectCard = ({ project }) => {
     const handleDeleteProject = (id, e) => {
         e.preventDefault();
         deleteProject(id).then((r) => {
-            if (r.success) {
-                location.reload();
-            }
-            else {
+            if (!r.success) {
                 console.log(r.error);
             }
         });

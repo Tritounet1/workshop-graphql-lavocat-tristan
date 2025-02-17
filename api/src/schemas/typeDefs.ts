@@ -25,7 +25,7 @@ export const typeDefs = buildSchema(`#graphql
     createComment(text: String!, project: Int!): Comment! @auth(requires: USER)
     updateProjectDate(id: ID!): Project! 
     updateTaskState(id: ID!, state: String!): Task! @auth(requires: USER)
-    deleteProject(id: ID!): Project! @auth(requires: USER)
+    deleteProject(id: ID!): ID! @auth(requires: USER)
   }
   
   type Subscription {

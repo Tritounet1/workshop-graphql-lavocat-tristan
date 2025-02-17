@@ -1,17 +1,20 @@
-import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client";
+import { ApolloClient, InMemoryCache, split } from "@apollo/client";
+import { createHttpLink } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
-import {GraphQLWsLink} from "@apollo/client/link/subscriptions/index.js";
+import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
+import { createClient } from "graphql-ws";
+import { getMainDefinition } from "@apollo/client/utilities";
 
-const API_ENDPOINT = "http://localhost:5050/graphql";
+// Définition des endpoints HTTP et WebSocket
+const API_HTTP_ENDPOINT = "http://localhost:5050";
+const API_WS_ENDPOINT = "ws://localhost:5050";
 
+// HTTP Link pour les requêtes classiques (Query et Mutation)
 const httpLink = createHttpLink({
-    uri: API_ENDPOINT,
+    uri: API_HTTP_ENDPOINT,
 });
 
-const wsLink = new GraphQLWsLink(createClient({
-    url: 'wss://<YOUR-HASURA-INSTANCE-URL>/v1/graphql',
-}));
-
+// Authentification des requêtes HTTP
 const authLink = setContext((_, { headers }) => {
     const token = localStorage.getItem("token");
     return {
@@ -22,7 +25,31 @@ const authLink = setContext((_, { headers }) => {
     };
 });
 
+// WebSocket Link pour les subscriptions
+const wsLink = new GraphQLWsLink(
+    createClient({
+        url: API_WS_ENDPOINT,
+        connectionParams: () => ({
+            Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+        }),
+    })
+);
+
+// Split Link pour router les requêtes en fonction de leur type
+const splitLink = split(
+    ({ query }) => {
+        const definition = getMainDefinition(query);
+        return (
+            definition.kind === "OperationDefinition" &&
+            definition.operation === "subscription"
+        );
+    },
+    wsLink,
+    authLink.concat(httpLink) // Fallback sur HTTP
+);
+
+// Création du client Apollo
 export const client = new ApolloClient({
-    link: authLink.concat(httpLink),
+    link: splitLink,
     cache: new InMemoryCache(),
 });

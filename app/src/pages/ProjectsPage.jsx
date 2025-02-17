@@ -4,6 +4,7 @@ import { ProjectCard } from '../components/ProjectCard';
 import { useEffect, useState } from 'react';
 import ProjectModal from "../components/ProjectModal.jsx";
 import {getProjects} from "../services/api.js";
+import ProjectSubscription from "../Subscriptions/ProjectSubsciption.jsx";
 
 export const ProjectsPage = () => {
   const [projects, setProjects] = useState([]);
@@ -47,6 +48,8 @@ export const ProjectsPage = () => {
               </Link>
           ))}
         </div>
+
+        <ProjectSubscription setProjects={setProjects} />
 
         {isModalOpen && (
           <ProjectModal setIsModalOpen={setIsModalOpen} />

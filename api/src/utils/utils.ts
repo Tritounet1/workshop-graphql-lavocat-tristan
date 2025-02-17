@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from "jsonwebtoken";
-import {createProject, getProject} from "../resolvers/projectResolver";
+import {createProject, getProject, getUserById} from "../resolvers/projectResolver";
 import {createUser} from "../resolvers/userResolver";
 import {createTask} from "../resolvers/taskResolver";
 import {createComment} from "../resolvers/commentResolver";
@@ -54,9 +54,9 @@ export const getTokenData = (token: string): TokenData | null => {
 };
 
 export const loadDatas = async() => {
-    /* VERIF IF PROJECT ALREADY EXIST (FOR FIX THE DUPLICATION WHEN HOT RELOAD) */
-    const projectVerif = await getProject(1);
-    if (projectVerif) {
+    /* (FOR FIX THE DUPLICATION WHEN HOT RELOAD) */
+    const admin = await getUserById(1);
+    if(admin) {
         return;
     }
     /* CREATING ADMIN USER */

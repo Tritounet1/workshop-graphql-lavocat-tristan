@@ -8,7 +8,7 @@ import {
 } from '../resolvers/projectResolver';
 import {taskMutation, taskQueries} from '../resolvers/taskResolver';
 import { userMutation, userQueries } from '../resolvers/userResolver';
-import {CommentMutation, commentQueries} from '../resolvers/commentResolver';
+import {CommentMutation, commentQueries, CommentSubscription} from '../resolvers/commentResolver';
 import {client} from "../client";
 
 export const resolvers = {
@@ -26,6 +26,7 @@ export const resolvers = {
     },
     Subscription: {
         ...ProjectSubscription,
+        ...CommentSubscription,
     },
     Project: {
         owner: async (parent: any, args: any, context: any, info: any) => {
@@ -39,5 +40,12 @@ export const resolvers = {
         tasks: async (parent: any, args: any, context: any, info: any) => {
             return await getTasksPerProjectId(parent.id);
         },
+    },
+    Comment: {
+        author: async (parent: any, args: any, context: any, info: any) => {
+            const result = await client.query(`SELECT author_id FROM Comment WHERE id = ${parent.id}`);
+            const row = result.rows[0];
+            return await getUserById(row.author_id);
+        }
     }
 }
