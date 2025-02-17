@@ -1,7 +1,7 @@
 import { buildSchema } from 'graphql';
 
 export const typeDefs = buildSchema(`#graphql
-
+  scalar DateTime
   directive @auth(requires: UserRole! = ADMIN) on FIELD_DEFINITION
 
   enum UserRole {
@@ -29,12 +29,17 @@ export const typeDefs = buildSchema(`#graphql
   }
   
   type Subscription {
-    newProject: Project!
-    newTask: Task!
-    newComment: Comment!
-    newProjectDate: Project!
-    newTaskState: Task!
-    removeProject: Project!
+    projectAdded: Project! @auth(requires: USER)
+    projectUpdated: Project! @auth(requires: USER)
+    projectDeleted: ID! @auth(requires: USER)
+    
+    taskAdded(project: ID!): Task! @auth(requires: USER)
+    taskUpdated(project: ID!): Task! @auth(requires: USER)
+    taskDeleted(project: ID!): ID! @auth(requires: USER)
+    
+    commentAdded(project: ID!): Comment! @auth(requires: USER)
+    commentUpdated(project: ID!): Comment! @auth(requires: USER)
+    commentDeleted(project: ID!): ID! @auth(requires: USER)
   }
 
   type Project {

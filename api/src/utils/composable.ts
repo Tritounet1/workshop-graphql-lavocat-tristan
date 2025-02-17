@@ -8,8 +8,7 @@ export function isAuthorized(atLeast: any) {
     };
 
     return ((next: any) => (root: any, args: any, context: any, info: any) => {
-        console.log(context);
-        if (!context.authUser) {
+        if (!context.user) {
             throw new GraphQLError("Vous ne pouvez pas faire ça.", {
                 extensions: {
                     code: "CLIENT_FORBIDDEN",
@@ -17,7 +16,7 @@ export function isAuthorized(atLeast: any) {
             } as any);
         }
 
-        const user = context.authUser;
+        const user = context.user;
         if (rolesScale[user.role] < rolesScale[atLeast]) {
             throw new GraphQLError("Vous ne pouvez pas faire ça.", {
                 extensions: {

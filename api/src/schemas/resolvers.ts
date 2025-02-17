@@ -3,7 +3,8 @@ import {
     getTasksPerProjectId,
     getUserById,
     ProjectMutation,
-    ProjectQueries
+    ProjectQueries,
+    ProjectSubscription
 } from '../resolvers/projectResolver';
 import {taskMutation, taskQueries} from '../resolvers/taskResolver';
 import { userMutation, userQueries } from '../resolvers/userResolver';
@@ -24,6 +25,7 @@ export const resolvers = {
         ...taskMutation,
     },
     Subscription: {
+        ...ProjectSubscription,
     },
     Project: {
         owner: async (parent: any, args: any, context: any, info: any) => {

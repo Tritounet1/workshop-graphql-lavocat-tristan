@@ -1,7 +1,10 @@
 import {client} from "../client";
-import {Project, Task, Comment, User} from "../types";
+import {Project, Task, Comment} from "../types";
 
-export const getUserById = async (id: User) => {
+const PROJECT_ADDED_EVENT = "projectAdded";
+const PROJECT_DELETED_EVENT = "projectDeleted";
+
+export const getUserById = async (id: number) => {
     console.log(id);
     const query = 'SELECT * FROM UserAccount WHERE id = $1';
     const values = [id];
@@ -16,7 +19,7 @@ export const getUserById = async (id: User) => {
 export const getCommentsPerProjectId = async(project_id : number) => {
     return await client.query(`SELECT * FROM Comment WHERE project_id = ${project_id}`).then((commentsArray) => {
         return commentsArray.rows.map( async(comment: Comment) => {
-            const user = await getUserById(comment.author_id);
+            const user = await getUserById(comment.author_id.id);
             return {
                 id: comment.id,
                 author: user,
@@ -162,10 +165,13 @@ export const ProjectQueries = {
 
 
 export const ProjectMutation = {
-    createProject: async (_parent: any, args: { name: string; description: string }) => {
+    createProject: async (_parent: any, args: { name: string; description: string }, context: any) => {
         try {
             const { name, description } = args
             const result = await createProject(name, description);
+            if(result) {
+                context.pubsub.publish(PROJECT_ADDED_EVENT, result);
+            }
             return result;
         } catch (error) {
             console.error("Erreur lors de la mutation :", error);
@@ -176,30 +182,43 @@ export const ProjectMutation = {
         try {
             const { id } = args
             const result = await updateProjectLastDate(id);
-            if (result) {
-                return true;
-            }
-            else {
-                return false;
-            }
+            return result;
         } catch (error) {
             console.error("Erreur lors de la mutation :", error);
             return false;
         }
     },
-    deleteProject: async (_parent: any, args: { id: number }) => {
+    deleteProject: async (_parent: any, args: { id: number }, context: any) => {
         try {
             const { id } = args
             const result = await deleteProject(id);
-            if (result) {
-                return true;
+            if(result) {
+                context.pubsub.publish(PROJECT_DELETED_EVENT, result);
             }
-            else {
-                return false;
-            }
+            return result;
         } catch (error) {
             console.error("Erreur lors de la mutation :", error);
             return false;
         }
     }
+}
+
+export const ProjectSubscription = {
+    projectAdded: {
+        subscribe: (_parent: any, _args: any, context: any) => {
+            return context.pubsub.asyncIterableIterator(PROJECT_ADDED_EVENT);
+        },
+        resolve: (payload: Project) => {
+            console.log(payload);
+            return payload;
+        },
+    },
+    projectDeleted: {
+        subscribe: (_parent: any, _args: any, context: any) => {
+            return context.pubsub.asyncIterableIterator(PROJECT_DELETED_EVENT);
+        },
+        resolve: (payload: string) => {
+            return payload;
+        },
+    },
 }

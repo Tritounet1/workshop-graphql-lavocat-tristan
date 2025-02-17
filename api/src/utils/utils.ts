@@ -39,6 +39,9 @@ export const createTokenFromJson = (jsonData: any, options={}) => {
 
 export const getTokenData = (token: string): TokenData | null => {
     try {
+        if(token.startsWith('Bearer ')) {
+            token = token.slice(7).trim();
+        }
         const decoded = jwt.verify(token, SECRET);
         if (typeof decoded === "string") {
             return null;
