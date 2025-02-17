@@ -19,7 +19,8 @@ export const getUserById = async (id: number) => {
 }
 
 export const getAuthorById = async (id: number) => {
-    await client.query(`SELECT author_id FROM Comment WHERE project_id = ${id}`).then(async(owner) => {
+    console.log(id);
+    await client.query(`SELECT author_id FROM Comment WHERE id = ${id}`).then(async(owner) => {
         return await getUserById(owner.rows[0].author_id);
     });
 }
