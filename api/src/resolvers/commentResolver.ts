@@ -1,4 +1,4 @@
-import { client } from "../app";
+import { client } from "../client";
 import {Comment} from "../types";
 
 const getComments = async () => {
@@ -6,100 +6,69 @@ const getComments = async () => {
         const result = await client.query('SELECT * FROM Comment');
         const formattedResult = result.rows.map((row: Comment) => ({
             id: row.id,
-            author: row.author,
+            author: row.author_id,
             text: row.text,
-            project: row.project,
         }));
         return formattedResult;
     } catch (err) {
         console.error('Erreur lors de la requête :', err);
+        return null;
     }
 }
 
-const getComment = async (id: number) => {
+export const createComment = async (text: string, project: number) => {
     try {
-        const query = 'SELECT * FROM Comment WHERE project = $1';
-        const values = [id];
-        const result = await client.query(query, values);
-
-        if (result.rows.length === 0) {
-            return null;
-        }
-        const formattedResult = result.rows.map((row: Comment) => ({
-            id: row.id,
-            author: row.author,
-            text: row.text,
-            project: row.project,
-        }));
-        return formattedResult;
-    } catch (err) {
-        console.error('Erreur lors de la requête :', err);
-        throw new Error('Impossible de récupérer le projet');
-    }
-};
-
-export const createComment = async (author: number, text: string, project: number) => {
-    try {
-        const query = 'INSERT INTO Comment(author, text, project) VALUES ($1, $2, $3)';
+        const author = 1; /* TODO RECUPERER L'USER AVEC LE TOWEN JWT */
+        const query = 'INSERT INTO Comment(author_id, text, project_id) VALUES ($1, $2, $3) RETURNING *';
         const values = [author, text, project];
         const result = await client.query(query, values);
         if(result) {
-            return true;
+            const formattedResult = {
+                id: result.rows[0].id,
+                author: result.rows[0].author,
+                text: result.rows[0].text,
+                project: result.rows[0].project,
+            }
+            return formattedResult;
         }
-        return false;
-        // return result;
+        return null;
     } catch (err) {
         console.error('Erreur lors de la requête :', err);
+        return null;
     }
 }
 
-export const commentResolver = {
+export const commentQueries = {
     comments: () => getComments(),
-    comment: ({ id }: { id: string | number }) => getComment(Number(id)),
 };
 
 const deleteComment = async (id: number) => {    try {
-    const query = 'DELETE FROM Comment WHERE id = $1';
+    const query = 'DELETE FROM Comment WHERE id = $1 RETURNING *';
     const values = [id];
-    const result = await client.query(query, values);
-
-    if(result) {
-        return true;
-    }
-    return false;
+    return await client.query(query, values);
 } catch (err) {
     console.error('Erreur lors de la requête :', err);
-    throw new Error('Impossible de récupérer le projet');
+    return null;
 }
 }
 
 export const CommentMutation = {
-    createComment: async ({ author, text, project }: { author: number, text: string, project: number }) => {
+    createComment: async (_parent: any, args: { text: string, projectId: number }) => {
         try {
-            const result = await createComment(author, text, project);
-            if (result) {
-                return true;
-            }
-            else {
-                return false;
-            }
+            const { text, projectId } = args
+            return await createComment(text, projectId);
         } catch (error) {
             console.error("Erreur lors de la mutation :", error);
-            return false;
+            return null;
         }
     },
-    deleteComment: async ({ id } : { id: number }) => {
+    deleteComment: async (_parent: any, args: { id: number }) => {
         try {
-            const result = await deleteComment(id);
-            if (result) {
-                return true;
-            }
-            else {
-                return false;
-            }
+            const { id } = args
+            return await deleteComment(id);
         } catch (error) {
             console.error("Erreur lors de la mutation :", error);
-            return false;
+            return null;
         }
     }
 }

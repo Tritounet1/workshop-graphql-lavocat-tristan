@@ -4,9 +4,7 @@ import {CommentList} from '../components/CommentList';
 import { PlusCircle, CheckSquare, MessageSquare, ArrowLeft, Calendar } from 'lucide-react';
 import {useEffect, useState} from "react";
 import {
-  getCommentsByProjectId,
-  getProjectById,
-  getTasksByProjectId,
+  getProjectDetails,
   getUserEmailById
 } from "../services/api.js";
 import TaskModal from "../components/TaskModal.jsx";
@@ -19,40 +17,11 @@ export const ProjectDetailsPage = () => {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
 
-  useEffect(() => {
-    getProjectById(projectId).then((projectDetails) => {
-      getCommentsByProjectId(projectId).then((comments) => {
-        const commentsWithEmails = comments
-            ? Promise.all(
-                comments.map((comment) =>
-                    getUserEmailById(comment.author).then((email) => ({
-                      id: comment.id,
-                      author: { email },
-                      text: comment.text,
-                    }))
-                )
-            )
-            : Promise.resolve([]);
-        commentsWithEmails.then((resolvedComments) => {
-          getTasksByProjectId(projectId).then((tasks) => {
-            const tasksProperly = tasks
-                ? tasks.map((task) => ({
-                  id: task.id,
-                  title: task.title,
-                  state: task.state,
-                }))
-                : [];
+  useEffect(async() => {
 
-            setProject({
-              ...projectDetails,
-              tasks: tasksProperly,
-              comments: resolvedComments,
-            });
-            setLoading(false);
-          });
-        });
-      });
-    });
+    const projectDetails = await getProjectDetails(projectId);
+
+    
   }, [projectId]);
 
   const handleAddTask = () => {

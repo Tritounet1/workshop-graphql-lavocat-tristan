@@ -1,4 +1,4 @@
-import { client } from "../app";
+import { client } from "../client";
 import {User} from "../types";
 import {hashPassword, comparePassword, createTokenFromJson} from "../utils";
 
@@ -17,66 +17,33 @@ const getUsers = async () => {
     }
 }
 
-const getUserEmail = async (id: number) => {
-    try {
-        const query = 'SELECT email FROM UserAccount WHERE id = $1';
-        const values = [id];
-        const result = await client.query(query, values);
-        return result.rows[0].email;
-    } catch (err) {
-        console.error('Erreur lors de la requête :', err);
-        throw new Error('Impossible de récupérer le projet');
-    }
-};
-
-const hasAccess = async (context: any) => {
-    if (!context.user) {
-        throw new Error("Accès interdit : Vous devez être authentifié pour accéder à cette requête.");
-    }
-
-    return {
-        id: context.user.id,
-        email: context.user.email,
-        role: context.user.role,
-    };
-};
-
-/*
-    FONCTIONNEL MAIS INCOMPREHENSIBLE CODE, TODO COMMENT PASSER UN CONTEXT GRAPHQL A SES RESOLVERS EN PROPRE
- */
-const me = (parent: any, args: any, context: any) => {
-    return hasAccess(args);
-};
-
-
-export const userResolver = {
-    user: ({ id }: { id: string | number }) => getUserEmail(Number(id)),
+export const userQueries = {
     users: () => getUsers(),
-    me: (parent: any, args: any, context: any) => me(parent, args, context),
 };
-
-
 
 export const createUser = async (email: string, password: string, role: string) => {
     try {
-        const query = 'INSERT INTO UserAccount(email, password, role) VALUES ($1, $2, $3)';
+        const query = 'INSERT INTO UserAccount(email, password, role) VALUES ($1, $2, $3) RETURNING *';
         const hashedPassword = hashPassword(password);
         const values = [email, hashedPassword, role];
         const result = await client.query(query, values);
-        if (result) {
-            return true;
+        const formatedResult = {
+            id: result.rows[0].id,
+            email: result.rows[0].email,
+            password: hashedPassword,
+            role: result.rows[0].role,
         }
-        else {
-            return false;
-        }
+        return formatedResult;
     } catch (err) {
         console.error('Erreur lors de la requête :', err);
+        return null;
     }
 }
 
 export const userMutation = {
-    login: async ({ email, password }: { email: string; password: string }) => {
+    login: async (_parent: any, args: { email: string; password: string }) => {
         try {
+            const { email, password } = args
             const users = await getUsers();
             const user = users?.find((user) => user.email === email && comparePassword(password, user.password)) !== undefined
             if(user) {
@@ -95,18 +62,19 @@ export const userMutation = {
             }
         } catch (error) {
             console.error("Erreur lors de la mutation login :", error);
-            return false;
+            return null;
         }
     },
-    register: async ({ email, password }: { email: string, password: string }) => {
+    register: async (_parent: any, args: { email: string; password: string }) => {
         try {
+            const { email, password } = args
             const result = await createUser(email, password, 'USER');
             if(result) {
-                const users = await getUsers();
-                const id  = users?.find!((user) => user.email === email)?.id;
-                const role  = users?.find!((user) => user.email === email)?.role;
+                const id  = result.id;
+                const role  = result.role;
 
                 const token = createTokenFromJson({ id: id, email: email, role: role });
+                console.log('token : ', token);
                 if(token) {
                     return token;
                 }

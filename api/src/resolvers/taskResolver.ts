@@ -1,5 +1,5 @@
-import { client } from "../app";
-import {Task} from "../types";
+import { client } from "../client";
+import {Task, TaskState} from "../types";
 
 const getTasks = async () => {
     try {
@@ -8,93 +8,97 @@ const getTasks = async () => {
             id: row.id,
             title: row.title,
             state: row.state,
-            project: row.project,
         }));
         return formattedResult;
     } catch (err) {
         console.error('Erreur lors de la requête :', err);
+        return null;
     }
 }
 
-const getTask = async (id: number) => {
-    try {
-        const query = 'SELECT * FROM Task WHERE project = $1';
-        const values = [id];
-        const result = await client.query(query, values);
-
-        if (result.rows.length === 0) {
-            return null;
-        }
-        const formattedResult = result.rows.map((row: Task) => ({
-            id: row.id,
-            title: row.title,
-            state: row.state,
-            project: row.project,
-        }));
-        return formattedResult;
-    } catch (err) {
-        console.error('Erreur lors de la requête :', err);
-        throw new Error('Impossible de récupérer le projet');
-    }
-};
-
-export const taskResolver = {
+export const taskQueries = {
     tasks: () => getTasks(),
-    task: ({ id }: { id: string | number }) => getTask(Number(id)),
 };
 
-export const createTask = async (title: string, project: number) => {
+export const createTask: (title: string, project: number) => Promise<{
+    id: number;
+    title: string;
+    state: TaskState;
+}[] | null> = async (title: string, project: number) => {
     try {
-        const query = 'INSERT INTO Task(title, state, project) VALUES ($1, $2, $3)';
+        /* TODO ENREGISTER LE TASK DANS LE PROJECT */
+        const query = 'INSERT INTO Task(title, state, project_id) VALUES ($1, $2, $3) RETURNING *';
         const values = [title, 'TO_DO', project];
         const result = await client.query(query, values);
         if(result) {
-            return true;
+            const formattedResult = result.rows.map((row: Task) => ({
+                id: row.id,
+                title: row.title,
+                state: row.state,
+            }));
+            if(formattedResult) {
+                return formattedResult;
+            }
+            return null;
         }
-        return false;
-        // return result;
+        return null;
     } catch (err) {
         console.error('Erreur lors de la requête :', err);
+        return null;
     }
 }
 
 
 const deleteTask = async (id: number) => {    try {
-    const query = 'DELETE FROM Task WHERE id = $1';
+    const query = 'DELETE FROM Task WHERE id = $1 RETURNING *';
     const values = [id];
     const result = await client.query(query, values);
-
     if(result) {
-        return true;
+        const formattedResult = result.rows.map((row: Task) => ({
+            id: row.id,
+            title: row.title,
+            state: row.state,
+        }));
+        if(formattedResult) {
+            return formattedResult;
+        }
+        return null;
     }
-    return false;
+    return null;
     } catch (err) {
         console.error('Erreur lors de la requête :', err);
-        throw new Error('Impossible de récupérer le projet');
+        return null;
     }
 }
 
 const updateTaskState = async (id: number, state: string) => {
     try {
-        const query = 'UPDATE Task SET state = $2 WHERE id = $1';
+        const query = 'UPDATE Task SET state = $2 WHERE id = $1 RETURNING *';
         const values = [id, state];
         const result = await client.query(query, values);
-
         if(result) {
-            return true;
+            const formattedResult = result.rows.map((row: Task) => ({
+                id: row.id,
+                title: row.title,
+                state: row.state,
+            }));
+            if(formattedResult) {
+                return formattedResult;
+            }
+            return null;
         }
-        return false;
-        // return result;
+        return null;
     } catch (err) {
         console.error('Erreur lors de la requête :', err);
-        return false;
+        return null;
     }
 };
 
 
-export const createTaskMutation = {
-    createTask: async ({ title, project }: { title: string, project: number }) => {
+export const taskMutation = {
+    createTask: async (_parent: any, args: { title: string, project: number }) => {
         try {
+            const { title, project } = args
             const result = await createTask(title, project);
             if (result) {
                 return true;
@@ -107,8 +111,9 @@ export const createTaskMutation = {
             return false;
         }
     },
-    updateTaskState: async ({ id, state } : { id: number, state: string }) => {
+    updateTaskState: async (_parent: any, args: { id: number, state: string }) => {
         try {
+            const { id, state } = args
             const result = await updateTaskState(id, state);
             if (result) {
                 return true;
@@ -121,8 +126,9 @@ export const createTaskMutation = {
             return false;
         }
     },
-    deleteTask: async ({ id } : { id: number }) => {
+    deleteTask: async (_parent: any, args: { id: number }) => {
         try {
+            const { id } = args
             const result = await deleteTask(id);
             if (result) {
                 return true;

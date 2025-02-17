@@ -56,72 +56,6 @@ export const getUserRole = async () => {
     }
 }
 
-export const getProjectById = async (id) => {
-    try {
-        const response = await client.query({
-            query: gql`
-        query GetProject($id: ID!) {
-          project(id: $id) {
-            id
-            name
-            description
-            lastUpdate
-            createdAt
-          }
-        }
-      `,
-            variables: { id },
-        });
-        return response.data.project;
-    } catch (err) {
-        console.error("Erreur dans la requête :", err);
-        return null;
-    }
-};
-
-export const getCommentsByProjectId = async (id) => {
-    try {
-        const response = await client.query({
-            query: gql`
-        query GetComment($id: ID!) {
-          comment(id: $id) {
-            id
-            author
-            text
-            project
-          }
-        }
-      `,
-            variables: { id },
-        });
-        return response.data.comment;
-    } catch (err) {
-        console.error("Erreur dans la requête :", err);
-        return [];
-    }
-};
-
-export const getTasksByProjectId = async (id) => {
-    try {
-        const response = await client.query({
-            query: gql`
-        query GetTask($id: ID!) {
-          task(id: $id) {
-            id
-            title
-            state
-            project
-          }
-        }
-      `,
-            variables: { id },
-        });
-        return response.data.task;
-    } catch (err) {
-        console.error("Erreur dans la requête :", err);
-        return [];
-    }
-};
 
 export const getUserEmailById = async (id) => {
     try {
@@ -360,3 +294,45 @@ export const createTask = async (title, projectId) => {
         return { success: false, error: "Une erreur est survenue lors de la requête." };
     }
 };
+
+export const getProjectDetails = async (projectId) => {
+    try {
+        const response = await client.query({
+            query: gql`
+        query GetProject($id: ID!) {
+          project(id: $id) {
+            id
+            name
+            description
+            lastUpdate
+            createdAt
+            tasks {
+              id
+              title
+              state
+            }
+            comments {
+              author {
+                id
+                email
+                role
+              }
+              id
+              text
+            }
+            owner {
+              id
+              email
+              role
+            }
+          } 
+        }
+      `,
+            variables: { projectId },
+        });
+        return response.data.project;
+    } catch (err) {
+        console.error("Erreur dans la requête :", err);
+        return null;
+    }
+}

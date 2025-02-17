@@ -12,8 +12,11 @@ export type Project = {
     id: number,
     name: string,
     description: string,
-    last_update: Date,
-    created_at: Date,
+    last_update: string,
+    created_at: string,
+    comments: Comment[],
+    tasks: Task[],
+    owner: User,
 }
 
 export type User = {
@@ -25,14 +28,12 @@ export type User = {
 
 export type Comment = {
     id: number,
-    author: number,
+    author_id: User,
     text: string,
-    project: number,
 }
 
 export type Task = {
     id: number,
     title: string,
     state: TaskState,
-    project: number,
 }

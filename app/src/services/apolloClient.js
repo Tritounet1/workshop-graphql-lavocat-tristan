@@ -1,7 +1,7 @@
 import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 
-const API_ENDPOINT = "http://localhost:5050/api";
+const API_ENDPOINT = "http://localhost:5050/graphql";
 
 const httpLink = createHttpLink({
     uri: API_ENDPOINT,
