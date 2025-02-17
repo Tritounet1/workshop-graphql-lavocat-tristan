@@ -3,12 +3,15 @@ import { makeExecutableSchema } from '@graphql-tools/schema';
 import {resolvers} from './schemas/resolvers';
 import {typeDefs} from './schemas/typeDefs';
 import { PubSub } from 'graphql-subscriptions';
-import {getUserFromRequest, loadDatas} from "./utils";
+import {getUserFromRequest, loadDatas} from "./utils/utils";
 import {startStandaloneServer} from "@apollo/server/standalone";
+import { authDirectiveTransformer } from "./directives/auth-directive";
 
 const pubsub = new PubSub();
 
-const schema = makeExecutableSchema({ typeDefs, resolvers });
+let schema = makeExecutableSchema({ typeDefs, resolvers });
+
+schema = authDirectiveTransformer(schema);
 
 const server = new ApolloServer({
   schema,
@@ -17,9 +20,7 @@ const server = new ApolloServer({
 startStandaloneServer(server, {
   listen: { port: 5050 },
   context: async ({ req }) => ({
-    authUser: async () => ({
-      user: await getUserFromRequest(req),
-    }),
+    authUser: await getUserFromRequest(req),
   }),
 }).then((serv) => {
   console.log(`🚀 Server ready at: ${serv.url}`);

@@ -1,10 +1,9 @@
 import bcrypt from 'bcryptjs';
 import jwt from "jsonwebtoken";
-import {createProject, getProject} from "./resolvers/projectResolver";
-import {createUser} from "./resolvers/userResolver";
-import {createTask} from "./resolvers/taskResolver";
-import {createComment} from "./resolvers/commentResolver";
-import {Project, Task} from "./types";
+import {createProject, getProject} from "../resolvers/projectResolver";
+import {createUser} from "../resolvers/userResolver";
+import {createTask} from "../resolvers/taskResolver";
+import {createComment} from "../resolvers/commentResolver";
 /*
 Install good version of bcryptjs for fix problem :
 npm install --save-dev bcryptjs@2.4.3
@@ -36,17 +35,14 @@ export const createTokenFromJson = (jsonData: any, options={}) => {
         console.error('Erreur lors de token:', err);
         return null;
     }
-
 }
 
 export const getTokenData = (token: string): TokenData | null => {
     try {
         const decoded = jwt.verify(token, SECRET);
-
         if (typeof decoded === "string") {
             return null;
         }
-
         return decoded as TokenData;
     } catch (error) {
         console.error("Invalid token:", error);
@@ -60,20 +56,20 @@ export const loadDatas = async() => {
     if (projectVerif) {
         return;
     }
-    /* CREATING DEFAULT USER */
-    createUser("user@gmail.com", "user", "USER").then(r => {
-        if (r) {
-            console.log("User create, email: test@gmail.com, password: 1234");
-        } else {
-            console.log("Can't create user.")
-        }
-    });
     /* CREATING ADMIN USER */
     createUser("admin@gmail.com", "admin", "ADMIN").then(r => {
         if (r) {
             console.log("Admin create, email: admin@gmail.com, password: admin");
         } else {
             console.log("Can't create admin.")
+        }
+    });
+    /* CREATING DEFAULT USER */
+    createUser("user@gmail.com", "user", "USER").then(r => {
+        if (r) {
+            console.log("User create, email: test@gmail.com, password: 1234");
+        } else {
+            console.log("Can't create user.")
         }
     });
     const project = await createProject('Task Management', 'Create App for manage tasks');
@@ -83,7 +79,7 @@ export const loadDatas = async() => {
         console.log("Can't create example project.")
     }
     /* CREATING TASK EXAMPLE */
-    const task:  void | Task = await createTask('Verif the readme', 1).then(r => {
+    await createTask('Verif the readme', 1).then(r => {
         if (r) {
             console.log("Example task create.");
         } else {
@@ -91,7 +87,7 @@ export const loadDatas = async() => {
         }
     });
     /* CREATING COMMENT EXAMPLE */
-    const comment: void | Comment = await createComment('Hello :)', 1).then(r => {
+    await createComment('Hello :)', 1).then(r => {
         if (r) {
             console.log("Example comment create.");
         } else {
@@ -102,15 +98,12 @@ export const loadDatas = async() => {
 
 export async function getUserFromRequest(request: any) {
     const authHeader = request.headers["authorization"];
-
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
         return undefined;
     }
-
     if (authHeader) {
         const token = authHeader.split(" ")[1];
         const user = getTokenData(token);
-
         if (user) {
             return user;
         } else {

@@ -1,27 +1,31 @@
 import { buildSchema } from 'graphql';
 
 export const typeDefs = buildSchema(`#graphql
+
+  directive @auth(requires: UserRole! = ADMIN) on FIELD_DEFINITION
+
+  enum UserRole {
+    USER
+    ADMIN
+  }
+
   type Query {
-    projects: [Project!]!
-    tasks: [Task!]!
-    users: [User!]!
-    comments: [Comment!]!
-    project(id: ID!): Project!
+    projects: [Project!]! @auth(requires: USER)
+    tasks: [Task!]! @auth(requires: USER)
+    users: [User!]! @auth(requires: ADMIN)
+    comments: [Comment!]! @auth(requires: USER)
+    project(id: ID!): Project! @auth(requires: USER)
   }
 
   type Mutation {
     login(email: String!, password: String!): String!
     register(email: String!, password: String!): String!
-    
-    createProject(name: String!, description: String!): Project!
-    createTask(title: String!, project: Int!): Task!
-    createComment(author: Int!, text: String!, project: Int!): Comment!
-    
-    updateProjectDate(id: ID!): Project!
-    updateTaskState(id: ID!, state: String!): Task!
-    deleteTask(id: ID!): Task!
-    deleteComment(id: ID!): Comment!
-    deleteProject(id: ID!): Project!
+    createProject(name: String!, description: String!): Project! @auth(requires: USER)
+    createTask(title: String!, project: Int!): Task! @auth(requires: USER)
+    createComment(text: String!, project: Int!): Comment! @auth(requires: USER)
+    updateProjectDate(id: ID!): Project! 
+    updateTaskState(id: ID!, state: String!): Task! @auth(requires: USER)
+    deleteProject(id: ID!): Project! @auth(requires: USER)
   }
   
   type Subscription {
@@ -30,8 +34,6 @@ export const typeDefs = buildSchema(`#graphql
     newComment: Comment!
     newProjectDate: Project!
     newTaskState: Task!
-    removeTask: Task!
-    removeComment: Comment!
     removeProject: Project!
   }
 
@@ -45,18 +47,24 @@ export const typeDefs = buildSchema(`#graphql
     tasks: [Task!]!
     owner: User!
   }
+  
+  enum TaskState {
+    TO_DO
+    IN_PROGRESS
+    DONE
+  }
 
   type Task {
     id: ID!
     title: String!
-    state: String!
+    state: TaskState!
   }
 
   type User {
     id: ID!
     email: String!
     password: String!
-    role: String!
+    role: UserRole!
   }
 
   type Comment {
@@ -64,6 +72,4 @@ export const typeDefs = buildSchema(`#graphql
     author: User!
     text: String!
   }
-  
-  directive @hasRole(role: String!) on FIELD_DEFINITION
 `);

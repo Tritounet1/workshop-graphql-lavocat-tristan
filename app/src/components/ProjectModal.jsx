@@ -11,12 +11,9 @@ const ProjectModal = ({ setIsModalOpen }) => {
             setError("Veuillez remplir tous les champs.");
             return;
         }
-
         setError("");
-
         try {
             const response = await createProject(formData.name, formData.description);
-
             if (response.success) {
                 console.log("Projet créé avec succès.");
                 setIsModalOpen(false);

@@ -5,7 +5,6 @@ import { PlusCircle, CheckSquare, MessageSquare, ArrowLeft, Calendar } from 'luc
 import {useEffect, useState} from "react";
 import {
   getProjectDetails,
-  getUserEmailById
 } from "../services/api.js";
 import TaskModal from "../components/TaskModal.jsx";
 import CommentModal from "../components/CommentModal.jsx";
@@ -17,11 +16,16 @@ export const ProjectDetailsPage = () => {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
 
-  useEffect(async() => {
-
+  const fetchProjectDetails = async () => {
     const projectDetails = await getProjectDetails(projectId);
+    return projectDetails;
+  }
 
-    
+  useEffect(() => {
+    fetchProjectDetails().then((response) => {
+      setProject(response);
+      setLoading(false);
+    })
   }, [projectId]);
 
   const handleAddTask = () => {

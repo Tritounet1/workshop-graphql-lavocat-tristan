@@ -1,78 +1,11 @@
 import {client} from "./apolloClient.js";
 import {gql} from "@apollo/client";
+import { jwtDecode } from "jwt-decode";
 
-const getUserId = async () => {
-    try {
-        const response = await client.query({
-            query: gql`
-            query {
-              me {
-                id
-              }
-            }
-      `,
-        });
-        return response.data.me.id;
-    } catch (err) {
-        console.error("Erreur dans la requête :", err);
-        return null;
-    }
+export const getUserInfo = () => {
+    const token = localStorage.getItem("token");
+    return jwtDecode(token);
 }
-
-export const getUserInfo = async () => {
-    try {
-        const response = await client.query({
-            query: gql`
-            query {
-              me {
-                email
-                role
-              }
-            }
-      `,
-        });
-        return response.data.me;
-    } catch (err) {
-        console.error("Erreur dans la requête :", err);
-        return null;
-    }
-}
-
-export const getUserRole = async () => {
-    try {
-        const response = await client.query({
-            query: gql`
-            query {
-              me {
-                role
-              }
-            }
-      `,
-        });
-        return response.data.me.role;
-    } catch (err) {
-        console.error("Erreur dans la requête :", err);
-        return null;
-    }
-}
-
-
-export const getUserEmailById = async (id) => {
-    try {
-        const response = await client.query({
-            query: gql`
-        query GetUserEmail($id: ID!) {
-          user(id: $id)
-        }
-      `,
-            variables: { id },
-        });
-        return response.data.user;
-    } catch (err) {
-        console.error("Erreur dans la requête :", err);
-        return null;
-    }
-};
 
 export const login = async (email, password) => {
     try {
@@ -133,6 +66,9 @@ export const getProjects = async () => {
             description
             lastUpdate
             createdAt
+            owner {
+                id
+            }
           }
         }
       `,
@@ -147,16 +83,15 @@ export const getProjects = async () => {
 
 export const createComment = async (text, projectId) => {
     try {
-        const authorId = await getUserId();
-
         const result = await client.mutate({
             mutation: gql`
-        mutation CreateComment($author: Int!, $text: String!, $project: Int!) {
-          createComment(author: $author, text: $text, project: $project)
+        mutation CreateComment($text: String!, $project: Int!) {
+          createComment(text: $text, project: $project) {
+            id
+          }
         }
       `,
             variables: {
-                author: Number(authorId),
                 text,
                 project: projectId,
             },
@@ -173,20 +108,13 @@ export const createComment = async (text, projectId) => {
 };
 
 export const createProject = async (name, description) => {
-    const role = await getUserRole();
-
-    if (!role) {
-        return { success: false, error: "Impossible de créer un projet sans être admin." };
-    }
-    if (role !== "ADMIN") {
-        return { success: false, error: "Impossible de créer un projet sans être admin." };
-    }
-
     try {
         const result = await client.mutate({
             mutation: gql`
         mutation CreateProject($name: String!, $description: String!) {
-          createProject(name: $name, description: $description)
+          createProject(name: $name, description: $description) {
+            id
+          }
         }
       `,
             variables: {
@@ -206,21 +134,13 @@ export const createProject = async (name, description) => {
 };
 
 export const deleteProject = async (id) => {
-    const role = await getUserRole();
-
-    if (!role) {
-        return { success: false, error: "Impossible de supprimer un projet sans être admin." };
-    }
-    if (role !== "ADMIN") {
-        return { success: false, error: "Impossible de supprimer un projet sans être admin." };
-    }
-
     try {
-
         const result = await client.mutate({
             mutation: gql`
         mutation DeleteProject($id: ID!) {
-          deleteProject(id: $id)
+          deleteProject(id: $id) {
+             id
+          }
         }
       `,
             variables: {
@@ -247,7 +167,9 @@ export const updateTaskState = async (taskId, newState, lastState) => {
         const result = await client.mutate({
             mutation: gql`
         mutation UpdateTaskState($id: ID!, $state: String!) {
-          updateTaskState(id: $id, state: $state)
+          updateTaskState(id: $id, state: $state) {
+            id
+          }
         }
       `,
             variables: {
@@ -275,7 +197,9 @@ export const createTask = async (title, projectId) => {
         const result = await client.mutate({
             mutation: gql`
         mutation CreateTask($title: String!, $project: Int!) {
-          createTask(title: $title, project: $project)
+          createTask(title: $title, project: $project) {
+            id
+          }
         }
       `,
             variables: {
@@ -299,36 +223,36 @@ export const getProjectDetails = async (projectId) => {
     try {
         const response = await client.query({
             query: gql`
-        query GetProject($id: ID!) {
-          project(id: $id) {
-            id
-            name
-            description
-            lastUpdate
-            createdAt
-            tasks {
-              id
-              title
-              state
-            }
-            comments {
-              author {
+            query GetProject($id: ID!) {
+              project(id: $id) {
                 id
-                email
-                role
-              }
-              id
-              text
+                name
+                description
+                lastUpdate
+                createdAt
+                tasks {
+                  id
+                  title
+                  state
+                }
+                comments {
+                  author {
+                    id
+                    email
+                    role
+                  }
+                  id
+                  text
+                }
+                owner {
+                  id
+                  email
+                  role
+                }
+              } 
             }
-            owner {
-              id
-              email
-              role
-            }
-          } 
-        }
-      `,
-            variables: { projectId },
+        `,
+            variables: { id: projectId },
         });
         return response.data.project;
     } catch (err) {

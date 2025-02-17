@@ -1,7 +1,7 @@
 import { Folder, ChevronRight, Clock, Trash } from 'lucide-react';
 import PropTypes from "prop-types";
 import {useEffect, useState} from "react";
-import {deleteProject, getUserRole} from "../services/api.js";
+import {deleteProject, getUserInfo} from "../services/api.js";
 
 const getRelativeTime = (dateInput) => {
     if (!dateInput) return "Date inconnue";
@@ -23,6 +23,7 @@ const getRelativeTime = (dateInput) => {
 export const ProjectCard = ({ project }) => {
 
     const [userRole, setUserRole] = useState("");
+    const [userId, setUserId] = useState(null);
 
     const handleDeleteProject = (id, e) => {
         e.preventDefault();
@@ -34,13 +35,12 @@ export const ProjectCard = ({ project }) => {
                 console.log(r.error);
             }
         });
-
     }
 
     useEffect(() => {
-        getUserRole().then((role) => {
-            setUserRole(role);
-        });
+        const userDetails = getUserInfo();
+        setUserRole(userDetails.role);
+        setUserId(userDetails.id);
     }, []);
 
     return (
@@ -60,7 +60,7 @@ export const ProjectCard = ({ project }) => {
                     <Clock className="h-4 w-4 mr-1" />
                     <span>{getRelativeTime(project.lastUpdate)}</span>
                 </div>
-                {userRole === "ADMIN" ? (
+                {userRole === "ADMIN" || String(userId) === String(project.owner.id) ? (
                     <div>
                         <button
                             onClick={(e) => {

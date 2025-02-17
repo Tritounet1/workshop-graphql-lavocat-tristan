@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { LogOut, Briefcase } from 'lucide-react';
 import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
-import { getUserInfo } from "../services/api.js";
+import {getUserInfo} from "../services/api.js";
 
 export const Layout = ({ children }) => {
   const navigate = useNavigate();
@@ -15,9 +15,8 @@ export const Layout = ({ children }) => {
   };
 
   useEffect(() => {
-    getUserInfo().then((user) => {
-      setFormData(user);
-    });
+    const userDetails = getUserInfo();
+    setFormData(userDetails);
   }, []);
 
   return (

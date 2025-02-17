@@ -1,6 +1,6 @@
 import { client } from "../client";
 import {User} from "../types";
-import {hashPassword, comparePassword, createTokenFromJson} from "../utils";
+import {hashPassword, comparePassword, createTokenFromJson} from "../utils/utils";
 
 const getUsers = async () => {
     try {
