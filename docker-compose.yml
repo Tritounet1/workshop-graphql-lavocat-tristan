@@ -15,7 +15,8 @@ services:
 
   task-management-api:
     depends_on:
-      - task-management-database
+      task-management-database:
+        condition: service_healthy
     build:
       context: ./api
       dockerfile: ../docker/api/Dockerfile
@@ -40,6 +41,11 @@ services:
       - ./docker/database/init-database.sql:/docker-entrypoint-initdb.d/init-database.sql
     ports:
       - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   task-management-data:

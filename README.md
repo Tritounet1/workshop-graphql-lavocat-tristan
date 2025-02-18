@@ -4,7 +4,84 @@
 
 
 
-## L'application :
+## L'application
+
+### C'est quoi ?
+
+C'est un projet workshop Graphql/Apollo, un mini-projet de A à Z, suffisamment concret pour repartir en ayant explorer les potentialités de Graphql.
+Un projet fait dans le cadre de la troisième année de But Informatique.
+
+### Les pages de l'application
+
+#### Layout :
+
+Le layout est la top bar qui permet de ce déconnecter (retour sur page /login et suppression token du navigateur), elle est visible quand on est connécté, on peut aussi voir son
+email et role, on peut retouner sur la page d'accueil en cliquant sur ProjectHub ou Projets.
+
+#### Page connexion `/login` :
+
+Une simple page de connexion interagissant avec le backend pour la connexion, d'un user, elle utilise la mutation login(email, password) pour s'identifier.
+Si la connexion est réussi alors le backend renvoie le token de l'utilisateur (token qui contient son email, role et id)
+Et l'utilisateur est rediriger vers la page d'accueil des projets.
+
+#### Page enregistrement `/register` :
+
+Une page d'authentification à l'application, elle utilise la mutation register(email, password), qui est permet à un utilisateur de s'enregister dans la base de données.
+Si l'authentification est réussi alors le backend renvoie le token de l'utilisateur créer.
+Et l'utilisateur est rediriger vers la page d'accueil des projets.
+
+#### Page d'accuel avec les projets `/` :
+
+La page centrale du projet, sur cette page on peut accéder aux différents projets.
+On peut en créer d'autre avec le bouton Nouveau Projet qui ouvre un modal.
+On peut les filtrés en séléctionnant un Offset et une limite de projet qui s'affiche
+Mais aussi on peut rechercher des mots clés dans le nom et description du projet.
+
+Il y a plusieurs connexions avec le backend :
+
+##### Query :
+- `projects` : pour récupérer tout les projets.
+- `projectsFilter` : pour séléctionner des projets avec un offset et une limite.
+- `searchProjects` : pour rechercher un projet avec un keyword spécéfique.
+
+##### Mutation :
+- `createProject` : pour créer un projet.
+
+##### Subscriptions :
+- `projectAdded` : Lorsqu'un projet est ajouté il se rajoute dans la liste des projets actuelle.
+- `projectUpdated` : Lorsqu'un projet est mis à jour il se met à jour dans la liste des projets actuelle.
+- `projectDeleted` : Lorsqu'un projet est supprimé il s'enlève de la liste des projets actuelle.
+
+
+#### Page des détails des projets `/projects` :
+
+Il y a plusieurs connexions avec le backend :
+
+##### Query :
+- `projects` : pour récupérer tout les projets.
+- `projectsFilter` : pour séléctionner des projets avec un offset et une limite.
+- `searchProjects` : pour rechercher un projet avec un keyword spécéfique.
+
+##### Mutation :
+- `deleteProject` : pour supprimer un projet.
+- `updateProject` : pour mettre à jour le projet.
+- `createComment` : pour créer un nouveau commentaire.
+- `deleteComment` : pour supprimer un commentaire.
+- `createTask` : pour créer une nouvelle tâche.
+- `updateTaskState` : pour mettre à jour l'état (en cours, terminé, à faire) d'une tâche.
+- `deleteTask` : pour supprimer une tâche.
+
+##### Subscriptions :
+- `projectUpdated` : Lorsque le projet séléctionné est mis à jour, ces informations le sont aussi.
+- `projectDeleted` : Lorsque le projet séléctionné est supprimé l'utilisateur est redirigé vers la page d'accueil.
+- `taskAdded` : Lorsqu'une nouvelle tâche est ajouté la liste des tâches est mis à jour.
+- `taskUpdated` : Lorsqu'une tâche mis à jour, cette tâche est mis à jour dans la liste.
+- `taskDeleted` : Lorsqu'une tâche est supprimé, cette tâche est supprimé de la liste.
+- `commentAdded` : Lorsqu'un commentaire  est ajouté la liste des tâches est mis à jour.
+- `commentUpdated` : Lorsqu'un commentaire est mis à jour, ce commentaire est mis à jour dans la liste.
+- `commentDeleted` : Lorsqu'un commentaire est supprimé, ce commentaire est supprimé de la liste.
+
+
 
 ### Docker
 
@@ -17,7 +94,7 @@ L'application est entièrement dockerisée, on trouve 3 services dans le docker-
 
 #### Volumes
 
-Et un volume :
+Un volume :
 - task-management-data
 
 Ce volume contient la base de données, il est utilisé pour persister les données quand le docker est supprimé et recréer.
@@ -71,7 +148,7 @@ Le rôle et l'email sont affichés en haut à droite de la page, à coté du bou
 
 ## backend : 
 
-![Backend](./assets/backend.gif)
+<img src="./assets/backend.gif" alt="Backend" width="300"/>
 
 ### URL :
 `http://localhost:5050`
@@ -91,91 +168,95 @@ Le rôle et l'email sont affichés en haut à droite de la page, à coté du bou
 
 ## GraphQL
 
-### Les enums (en TypeScript) :
+### Les types et enums :
 
-```ts
-export enum UserRole {
-    'USER',
-    'ADMIN',
+```graphql
+directive @auth(requires: UserRole! = ADMIN) on FIELD_DEFINITION
+
+enum UserRole {
+USER
+ADMIN
 }
 
-export enum TaskState {
-    'IN_PROGRESS',
-    'TO_DO',
-    'DONE',
-}
-```
 
-### Les entités (en TypeScript) :
-
-```ts
-export type Project = {
-    id: number,
-    name: string,
-    description: string,
-    last_update: Date,
-    created_at: Date,
+type Project {
+    id: ID!
+    name: String!
+    description: String!
+    lastUpdate: String!
+    createdAt: String!
+    comments: [Comment!]!
+    tasks: [Task!]!
+    owner: User!
 }
 
-export type User = {
-    id: number,
-    email: string,
-    password: string,
-    role: UserRole,
+enum TaskState {
+    TO_DO
+    IN_PROGRESS
+    DONE
 }
 
-export type Comment = {
-    id: number,
-    author: User,
-    text: string,
-    project: number,
+type Task {
+    id: ID!
+    title: String!
+    state: TaskState!
 }
 
-export type Task = {
-    id: number,
-    title: string,
-    state: TaskState,
-    project: number,
+type User {
+    id: ID!
+    email: String!
+    password: String!
+    role: UserRole!
+}
+
+type Comment {
+    id: ID!
+    author: User!
+    text: String!
 }
 ```
 
 ### Les queries
 
 ```
- projects: [Project!]! @auth(requires: USER)
- tasks: [Task!]! @auth(requires: USER)
- users: [User!]! @auth(requires: ADMIN)
- comments: [Comment!]! @auth(requires: USER)
- project(id: ID!): Project! @auth(requires: USER)
+projects: [Project!]! @auth(requires: USER)
+projectsFilter(offset: Int!, limit: Int!): [Project!]! @auth(requires: USER)
+searchProjects(keyword: String!): [Project!]! @auth(requires: USER)
+tasks: [Task!]! @auth(requires: USER)
+users: [User!]! @auth(requires: ADMIN)
+comments: [Comment!]! @auth(requires: USER)
+project(id: ID!): Project! @auth(requires: USER)
+tasksByStatus(project: Int!, status: String!): [Task!]!
 ```
 
 ### Les mutations 
 
 ```
- login(email: String!, password: String!): String!
- register(email: String!, password: String!): String!
- createProject(name: String!, description: String!): Project! @auth(requires: USER)
- createTask(title: String!, project: Int!): Task! @auth(requires: USER)
- createComment(text: String!, project: Int!): Comment! @auth(requires: USER)
- updateProjectDate(id: ID!): Project! 
- updateTaskState(id: ID!, state: String!): Task! @auth(requires: USER)
- deleteProject(id: ID!): ID! @auth(requires: USER)
+login(email: String!, password: String!): String!
+register(email: String!, password: String!): String!
+createProject(name: String!, description: String!): Project! @auth(requires: USER)
+createTask(title: String!, project: Int!): Task! @auth(requires: USER)
+createComment(text: String!, project: Int!): Comment! @auth(requires: USER)
+updateProjectDate(id: ID!): Project!
+updateTaskState(id: ID!, state: String!): Task! @auth(requires: USER)
+deleteProject(id: ID!): ID! @auth(requires: USER)
+updateProject(id: ID!, name: String!, description: String!): Project! @auth(requires: USER)
+deleteTask(id: ID!): ID! @auth(requires: USER)
+deleteComment(id: ID!): ID! @auth(requires: USER)
 ```
 
 ### Les subscriptions
 
 ```
- projectAdded: Project! @auth(requires: USER)
- projectUpdated: Project! @auth(requires: USER)
- projectDeleted: ID! @auth(requires: USER)
- 
- taskAdded(project: ID!): Task! @auth(requires: USER)
- taskUpdated(project: ID!): Task! @auth(requires: USER)
- taskDeleted(project: ID!): ID! @auth(requires: USER)
- 
- commentAdded(project: ID!): Comment! @auth(requires: USER)
- commentUpdated(project: ID!): Comment! @auth(requires: USER)
- commentDeleted(project: ID!): ID! @auth(requires: USER)
+projectAdded: Project! @auth(requires: USER)
+projectUpdated: Project! @auth(requires: USER)
+projectDeleted: ID! @auth(requires: USER)
+taskAdded(project: ID!): Task! @auth(requires: USER)
+taskUpdated(project: ID!): Task! @auth(requires: USER)
+taskDeleted(project: ID!): ID! @auth(requires: ADMIN)
+commentAdded(project: ID!): Comment! @auth(requires: USER)
+commentUpdated(project: ID!): Comment! @auth(requires: USER)
+commentDeleted(project: ID!): ID! @auth(requires: USER)
 ```
 
 
@@ -193,7 +274,8 @@ export type Task = {
 
 ### Fonctionnement
 
-La base de donnée est créer grâce au docker-compose, et les tables sont créent grâce au `init-database.sql` dans `docker/database`.
+La base de donnée est créer grâce au docker-compose.yml, et les tables sont créent automatiquement à son démarrage grâce au `init-database.sql` dans `docker/database`.
+
 
 
 ## Javascript VS Python
@@ -202,7 +284,7 @@ La base de donnée est créer grâce au docker-compose, et les tables sont crée
 
 JavaScript est bien meilleur dans le web que cette fraude de Python.
 
-Il a un écosystème bien meilleur avec nodejs comparé à cette immonde pip.
+Il a un écosystème bien meilleur avec nodejs comparé à zoh immonde pip.
 
 Il permet d'avoir un frontend en React et un backend en Js donc le même language au frontend et backend, ce qui permet une meilleur maintenabilité.
 
@@ -211,3 +293,17 @@ Python est connu pour sa lenteur ce qui est un défaut, une api est censée pouv
 L'asynchrone sur Javascript est bien mieux géré que sur python.
 
 Node.js peut utiliser TypeScript, ce qui permet un typage statique et qui aide à éviter les erreurs.
+
+
+
+## Conclusion
+
+Le projet workshop Graphql/Apollo est un très bon projet pour l'apprentissage des bases de GraphQL.
+
+C'est un projet assez conséquent et il mériterait d'y consacrer plus de temps que 2 jours.
+
+## Merci
+
+<img src="./assets/thanks.gif" alt="drawing" width="300"/>
+
+

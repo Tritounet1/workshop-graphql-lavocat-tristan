@@ -1,13 +1,16 @@
 import { Link, useParams } from 'react-router-dom';
 import { TaskItem } from '../components/TaskItem';
 import { CommentList } from '../components/CommentList';
-import { PlusCircle, CheckSquare, MessageSquare, ArrowLeft, Calendar } from 'lucide-react';
+import {PlusCircle, CheckSquare, MessageSquare, ArrowLeft, Calendar, Pen, Trash} from 'lucide-react';
 import { useEffect, useState } from "react";
-import {getProjectDetails, getTaskByState, getUserInfo} from "../services/api.js";
+import {deleteProject, getProjectDetails, getTaskByState, getUserInfo} from "../services/api.js";
 import TaskModal from "../components/TaskModal.jsx";
 import CommentModal from "../components/CommentModal.jsx";
 import CommentSubscription from "../Subscriptions/CommentSubcription.jsx";
 import TaskSubscription from "../Subscriptions/TaskSubscription.jsx";
+import ProjectUpdateModal from "../components/ProjectUpdateModal.jsx";
+import {useSubscription} from "@apollo/client";
+import {PROJECT_DELETED, PROJECT_UPDATED} from "../Subscriptions/ProjectSubsciption.jsx";
 
 export const ProjectDetailsPage = () => {
   const { projectId } = useParams();
@@ -18,6 +21,42 @@ export const ProjectDetailsPage = () => {
   const [taskState, setTaskState] = useState("NO_FILTER");
   const [userRole, setUserRole] = useState("");
   const [userId, setUserId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { data: updatedProjectData, error: updatedProjectError } = useSubscription(PROJECT_UPDATED);
+  const { data: deletedProjectData, error: deletedProjectError } = useSubscription(PROJECT_DELETED);
+
+  useEffect(() => {
+    if (updatedProjectData?.projectUpdated) {
+      setProject((prevProject) => ({
+        ...prevProject,
+        ...updatedProjectData.projectUpdated,
+        comments: prevProject.comments,
+        tasks: prevProject.tasks,
+      }));
+    }
+    if (deletedProjectData?.projectDeleted) {
+      location.href = "/";
+    }
+  }, [deletedProjectData, updatedProjectData, setProject]);
+
+  if (updatedProjectError) {
+    console.error("Erreur de subscription (mise à jour de projet) :", updatedProjectError);
+  }
+  if (deletedProjectError) {
+    console.error("Erreur de subscription (suppression de projet) :", deletedProjectError);
+  }
+
+  const handleDeleteProject = (id, e) => {
+    e.preventDefault();
+    deleteProject(id).then((r) => {
+      if (!r.success) {
+        console.log(r.error);
+      }
+      else {
+        location.href = "/";
+      }
+    });
+  }
 
   const fetchProjectDetails = async () => {
     const projectDetails = await getProjectDetails(projectId);
@@ -65,11 +104,44 @@ export const ProjectDetailsPage = () => {
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">{project.name}</h2>
                 <p className="text-gray-600">{project.description}</p>
               </div>
-              <div className="flex items-center text-sm text-gray-500">
-                <Calendar className="h-4 w-4 mr-1" />
-                <span>Créé le {new Date(project.createdAt).toLocaleDateString('fr-FR', {
-                  day: '2-digit', month: 'short', year: 'numeric',
-                })}</span>
+              <div className="flex flex-col items-center text-sm text-gray-500">
+                <div className="flex flex-row">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  <span>Créer le {new Date(project.createdAt).toLocaleDateString('fr-FR', {
+                    day: '2-digit', month: 'short', year: 'numeric',
+                  })}
+                </span>
+                </div>
+                <div>
+                  {isModalOpen && (
+                      <ProjectUpdateModal projectId={Number(project.id)} setIsModalOpen={setIsModalOpen} />
+                  )}
+                  {(userRole === "ADMIN" || String(userId) === String(project.owner.id)) && (
+                      <div className="flex items-center space-x-8 pt-8">
+                        <div>
+                          <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                setIsModalOpen(true);
+                              }}
+                          >
+                            <Pen />
+                          </button>
+                        </div>
+                        <div>
+                          <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteProject(project.id, e);
+                              }}
+                          >
+                            <Trash />
+                          </button>
+                        </div>
+                      </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

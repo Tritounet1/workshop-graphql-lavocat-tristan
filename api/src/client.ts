@@ -1,4 +1,5 @@
 import { Client } from "pg";
+import {loadDatas} from "./utils/utils";
 
 export const DB_CONFIG = {
     host: "task-management-database",
@@ -11,14 +12,13 @@ export const DB_CONFIG = {
 
 export let client: Client;
 
-/*
-    TODO RECONNECT AUTO TO DB WHEN THE DB IS NOT STARTED
- */
 const connectToDatabase = async () => {
+
     try {
         client = new Client(DB_CONFIG);
         await client.connect();
         console.log("✅ Connexion à la base de données réussie");
+        await loadDatas();
     } catch (err: any) {
         console.error("❌ Erreur de connexion à la base de données :", err.message);
         console.log("🔄 Nouvelle tentative dans 5 secondes...");

@@ -56,11 +56,23 @@ export const TaskItem = ({ userRole, userId, task }) => {
 
   return (
       <div className="relative flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:shadow-sm transition-all duration-200">
-        <div className="flex items-center space-x-3">
-          <StatusIcon className={`h-5 w-5 ${config.color}`} />
-          <span className="text-gray-900 font-medium">{task.title}</span>
+        <div className="flex flex-col space-x-3">
+          <div className="flex items-center space-x-3">
+            <StatusIcon className={`h-5 w-5 ${config.color}`} />
+            <span className="text-gray-900 font-medium">{task.title}</span>
+          </div>
+          {(userRole === "ADMIN" || String(userId) === String(task.authorId)) && (
+              <button
+                  className={"pt-4"}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteTask(task.id);
+                  }}
+              >
+                <Trash />
+              </button>
+          )}
         </div>
-
         <div className="relative">
           <button
               className={`px-3 py-1 text-sm font-medium rounded-full ${config.bg} ${config.color}`}
@@ -68,20 +80,6 @@ export const TaskItem = ({ userRole, userId, task }) => {
           >
             {config.text}
           </button>
-
-          {(userRole === "ADMIN" || String(userId) === String(task.authorId)) && (
-              <div>
-                <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteTask(task.id);
-                    }}
-                >
-                  <Trash />
-                </button>
-              </div>
-          )}
-
           {isMenuOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-md z-10">
                 {Object.entries(statusConfig).map(([stateKey, stateConfig]) => (

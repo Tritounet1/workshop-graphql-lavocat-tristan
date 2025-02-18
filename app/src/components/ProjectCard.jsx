@@ -1,8 +1,5 @@
-import { Folder, ChevronRight, Clock, Trash, Pen } from 'lucide-react';
+import { Folder, ChevronRight, Clock } from 'lucide-react';
 import PropTypes from "prop-types";
-import { useEffect, useState } from "react";
-import { deleteProject, getUserInfo } from "../services/api.js";
-import ProjectUpdateModal from "./ProjectUpdateModal.jsx";
 
 const getRelativeTime = (dateInput) => {
     if (!dateInput) return "Date inconnue";
@@ -22,25 +19,6 @@ const getRelativeTime = (dateInput) => {
 };
 
 export const ProjectCard = ({ project }) => {
-    const [userRole, setUserRole] = useState("");
-    const [userId, setUserId] = useState(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-
-    const handleDeleteProject = (id, e) => {
-        e.preventDefault();
-        deleteProject(id).then((r) => {
-            if (!r.success) {
-                console.log(r.error);
-            }
-        });
-    }
-
-    useEffect(() => {
-        const userDetails = getUserInfo();
-        setUserRole(userDetails.role);
-        setUserId(userDetails.id);
-    }, []);
-
     return (
         <div className="group bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-all duration-200">
             <div className="flex items-start justify-between mb-4">
@@ -58,34 +36,6 @@ export const ProjectCard = ({ project }) => {
                     <Clock className="h-4 w-4 mr-1" />
                     <span>{getRelativeTime(project.lastUpdate)}</span>
                 </div>
-                {isModalOpen && (
-                    <ProjectUpdateModal projectId={Number(project.id)} setIsModalOpen={setIsModalOpen} />
-                )}
-                {(userRole === "ADMIN" || String(userId) === String(project.owner.id)) && (
-                    <div className="flex items-center space-x-8">
-                        <div>
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    setIsModalOpen(true);
-                                }}
-                            >
-                                <Pen />
-                            </button>
-                        </div>
-                        <div>
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteProject(project.id, e);
-                                }}
-                            >
-                                <Trash />
-                            </button>
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
     );

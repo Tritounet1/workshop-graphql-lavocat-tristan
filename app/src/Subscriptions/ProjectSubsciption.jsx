@@ -19,7 +19,7 @@ const NEW_PROJECT_CREATE = gql`
     }
 `;
 
-const PROJECT_UPDATED = gql`
+export const PROJECT_UPDATED = gql`
     subscription {
         projectUpdated {
             id
@@ -36,7 +36,7 @@ const PROJECT_UPDATED = gql`
     }
 `;
 
-const PROJECT_DELETED = gql`
+export const PROJECT_DELETED = gql`
     subscription {
         projectDeleted
     }

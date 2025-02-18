@@ -8,7 +8,6 @@ import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/use/ws";
 import { contextFromConnectionParams, contextFromRequest } from "./context";
 import schema from "./schemas/schema";
-import {loadDatas} from "./utils/utils";
 
 const app = express();
 const server = http.createServer(app);
@@ -68,7 +67,6 @@ gqlServer.start().then(() => {
         () => {
             console.log(`🚀 Server ready at http://${host}:${port}`);
             console.log(`📅 Subscriptions ready at http://${host}:${port}`);
-            loadDatas();
         }
     );
 });
