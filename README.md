@@ -55,6 +55,11 @@ Il y a plusieurs connexions avec le backend :
 
 #### Page des détails des projets `/projects` :
 
+La page des détails des projets, sur cette page on à la possibilité de modifier le projet, d'accéder les commentaires et les tâches d'un projet. 
+Un admin peut supprimer et modifier n'importe quel projet.
+Les USERS peuvent modifier leur propre projets.
+Les tâches peuvent être triés selon leur type (en cours, à faire et terminé).
+
 Il y a plusieurs connexions avec le backend :
 
 ##### Query :
@@ -301,8 +306,6 @@ Node.js peut utiliser TypeScript, ce qui permet un typage statique et qui aide �
 Le projet workshop Graphql/Apollo est un très bon projet pour l'apprentissage des bases de GraphQL.
 
 C'est un projet assez conséquent et il mériterait d'y consacrer plus de temps que 2 jours.
-
-## Merci
 
 <img src="./assets/thanks.gif" alt="drawing" width="300"/>
 

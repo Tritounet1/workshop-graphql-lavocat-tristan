@@ -13,7 +13,6 @@ const ProtectedRoutes = ({ children }) => {
     }
 
     if (location.pathname === "/login" || location.pathname === "/signup") {
-        /* TODO VERIFICATION DU TOKEN DANS LE BACKEND SI IL EST CORRECTE */
         return <Navigate to="/" replace />;
     }
 
