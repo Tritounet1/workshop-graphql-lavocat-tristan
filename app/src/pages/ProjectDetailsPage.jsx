@@ -120,15 +120,6 @@ export const ProjectDetailsPage = () => {
                 <CommentList comments={project.comments} />
             ) : <p>Aucun commentaire pour ce projet.</p>}
           </div>
-          <div className="text-center">
-            <button
-                onClick={fetchProjectDetails}
-                className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200"
-            >
-              <Filter className="h-4 w-4 mr-2" />
-              Rafraîchir les données
-            </button>
-          </div>
         </div>
         {isTaskModalOpen && <TaskModal projectId={Number(projectId)} setIsModalOpen={setIsTaskModalOpen} />}
         {isCommentModalOpen && <CommentModal projectId={Number(projectId)} setIsModalOpen={setIsCommentModalOpen} />}

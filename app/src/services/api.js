@@ -192,6 +192,35 @@ export const createProject = async (name, description) => {
     }
 };
 
+export const updateProject = async (id, name, description) => {
+    try {
+        const result = await client.mutate({
+            mutation: gql`
+        mutation($id: ID!, $name: String!, $description: String!) {
+            updateProject(id: $id, name: $name, description: $description) {
+                id
+                name
+                description
+            }
+        }
+      `,
+            variables: {
+                id,
+                name,
+                description,
+            },
+        });
+        if (result) {
+            return { success: true };
+        } else {
+            return { success: false, error: "Erreur lors de la mise à jour du projet." };
+        }
+    } catch (error) {
+        console.error("Erreur dans la mutation :", error);
+        return { success: false, error: "Une erreur est survenue lors de la requête." };
+    }
+};
+
 export const deleteProject = async (id) => {
     try {
         const result = await client.mutate({

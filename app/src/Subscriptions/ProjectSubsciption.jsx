@@ -19,7 +19,24 @@ const NEW_PROJECT_CREATE = gql`
     }
 `;
 
-const NEW_PROJECT_DELETED = gql`
+const PROJECT_UPDATED = gql`
+    subscription {
+        projectUpdated {
+            id
+            name
+            description
+            createdAt
+            lastUpdate
+            owner {
+                id
+                email
+                role
+            }
+        }
+    }
+`;
+
+const PROJECT_DELETED = gql`
     subscription {
         projectDeleted
     }
@@ -27,7 +44,8 @@ const NEW_PROJECT_DELETED = gql`
 
 const ProjectSubscription = ({ setProjects }) => {
     const { data: addedData, error: addedError } = useSubscription(NEW_PROJECT_CREATE);
-    const { data: deletedData, error: deletedError } = useSubscription(NEW_PROJECT_DELETED);
+    const { data: updatedData, error: updatedError } = useSubscription(PROJECT_UPDATED);
+    const { data: deletedData, error: deletedError } = useSubscription(PROJECT_DELETED);
 
     useEffect(() => {
         if (addedData?.projectAdded) {
@@ -36,15 +54,28 @@ const ProjectSubscription = ({ setProjects }) => {
     }, [addedData, setProjects]);
 
     useEffect(() => {
+        if (updatedData?.projectUpdated) {
+            setProjects((prevProjects) =>
+                prevProjects.map((project) =>
+                    project.id === updatedData.projectUpdated.id ? updatedData.projectUpdated : project
+                )
+            );
+        }
+    }, [updatedData, setProjects]);
+
+    useEffect(() => {
         if (deletedData?.projectDeleted) {
             setProjects((prevProjects) =>
-                prevProjects.filter((project) => project.id !== deletedData.projectDeleted)
+                prevProjects.filter((project) => project.id !== deletedData.projectDeleted.id)
             );
         }
     }, [deletedData, setProjects]);
 
     if (addedError) {
         console.error("Erreur de subscription (ajout de projet) :", addedError);
+    }
+    if (updatedError) {
+        console.error("Erreur de subscription (mise à jour de projet) :", updatedError);
     }
     if (deletedError) {
         console.error("Erreur de subscription (suppression de projet) :", deletedError);

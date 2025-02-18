@@ -2,6 +2,7 @@ import {client} from "../client";
 import {Project, Task, Comment} from "../types";
 
 const PROJECT_ADDED_EVENT = "projectAdded";
+const PROJECT_UPDATED_EVENT = "projectUpdated";
 const PROJECT_DELETED_EVENT = "projectDeleted";
 
 export const getUserById = async (id: number) => {
@@ -208,7 +209,7 @@ export const ProjectMutation = {
             return result;
         } catch (error) {
             console.error("Erreur lors de la mutation :", error);
-            return false;
+            return null;
         }
     },
     updateProjectDate: async (_parent: any, args: { id: number }) => {
@@ -218,7 +219,7 @@ export const ProjectMutation = {
             return result;
         } catch (error) {
             console.error("Erreur lors de la mutation :", error);
-            return false;
+            return null;
         }
     },
     deleteProject: async (_parent: any, args: { id: number }, context: any) => {
@@ -231,9 +232,34 @@ export const ProjectMutation = {
             return result;
         } catch (error) {
             console.error("Erreur lors de la mutation :", error);
-            return false;
+            return null;
         }
-    }
+    },
+    updateProject: async (_parent: any, args: { id: number, name: string, description: string }, context: any) => {
+        try {
+            const { id, name, description } = args;
+            console.log({ id, name, description });
+            const query = `UPDATE Project SET name=$2, description=$3 WHERE id=$1 RETURNING *`;
+            const values = [id, name, description];
+            const result = await client.query(query, values);
+            if(result) {
+                const row = result.rows[0];
+                const project = {
+                    id: row.id,
+                    name: row.name,
+                    description: row.description,
+                    lastUpdate: row.last_update ? new Date(row.last_update).toISOString() : null,
+                    createdAt: row.created_at ? new Date(row.created_at).toISOString() : null,
+                }
+                context.pubsub.publish(PROJECT_UPDATED_EVENT, project);
+                return project;
+            }
+            return null;
+        } catch (error) {
+            console.error("Erreur lors de la mutation :", error);
+            return null;
+        }
+    },
 }
 
 export const ProjectSubscription = {
@@ -253,4 +279,13 @@ export const ProjectSubscription = {
             return payload;
         },
     },
+    projectUpdated: {
+        subscribe: (_parent: any, _args: any, context: any) => {
+            return context.pubsub.asyncIterableIterator(PROJECT_UPDATED_EVENT);
+        },
+        resolve: (payload: Project) => {
+            console.log('NEW PROJECT : ');
+            return payload;
+        },
+    }
 }
