@@ -3,6 +3,7 @@ import { Task, TaskState} from "../types";
 
 const TASK_ADDED_EVENT = "taskAdded";
 const TASK_UPDATE_EVENT = "taskUpdated";
+const TASK_DELETE_EVENT = "taskDeleted";
 
 const getTasks = async () => {
     try {
@@ -63,6 +64,18 @@ export const createTask: (title: string, project: number) => Promise<{
     }
 }
 
+const deleteTask = async (id: number) => {    try {
+    const query = 'DELETE FROM Task WHERE id = $1 RETURNING *';
+    const values = [id];
+    const result = await client.query(query, values);
+    const row = result.rows[0];
+    return row.id;
+    } catch (err) {
+        console.error('Erreur lors de la requête :', err);
+        return null;
+    }
+}
+
 const updateTaskState = async (id: number, state: string) => {
     try {
         const query = 'UPDATE Task SET state = $2 WHERE id = $1 RETURNING *';
@@ -106,6 +119,19 @@ export const taskMutation = {
             return false;
         }
     },
+    deleteTask: async (_parent: any, args: { id: number }, context: any) => {
+        try {
+            const { id } = args
+            const result = await deleteTask(id);
+            if(result) {
+                context.pubsub.publish(TASK_DELETE_EVENT, result);
+            }
+            return result;
+        } catch (error) {
+            console.error("Erreur lors de la mutation :", error);
+            return null;
+        }
+    },
 };
 
 export const TaskSubscription = {
@@ -120,6 +146,14 @@ export const TaskSubscription = {
     taskUpdated: {
         subscribe: (_parent: any, _args: any, context: any) => {
             return context.pubsub.asyncIterableIterator(TASK_UPDATE_EVENT);
+        },
+        resolve: (payload: Task) => {
+            return payload;
+        },
+    },
+    taskDeleted: {
+        subscribe: (_parent: any, _args: any, context: any) => {
+            return context.pubsub.asyncIterableIterator(TASK_DELETE_EVENT);
         },
         resolve: (payload: Task) => {
             return payload;

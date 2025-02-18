@@ -1,9 +1,9 @@
 import { Link, useParams } from 'react-router-dom';
 import { TaskItem } from '../components/TaskItem';
 import { CommentList } from '../components/CommentList';
-import { PlusCircle, CheckSquare, MessageSquare, ArrowLeft, Calendar, Filter } from 'lucide-react';
+import { PlusCircle, CheckSquare, MessageSquare, ArrowLeft, Calendar } from 'lucide-react';
 import { useEffect, useState } from "react";
-import { getProjectDetails, getTaskByState } from "../services/api.js";
+import {getProjectDetails, getTaskByState, getUserInfo} from "../services/api.js";
 import TaskModal from "../components/TaskModal.jsx";
 import CommentModal from "../components/CommentModal.jsx";
 import CommentSubscription from "../Subscriptions/CommentSubcription.jsx";
@@ -16,6 +16,8 @@ export const ProjectDetailsPage = () => {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
   const [taskState, setTaskState] = useState("NO_FILTER");
+  const [userRole, setUserRole] = useState("");
+  const [userId, setUserId] = useState(null);
 
   const fetchProjectDetails = async () => {
     const projectDetails = await getProjectDetails(projectId);
@@ -36,6 +38,12 @@ export const ProjectDetailsPage = () => {
   useEffect(() => {
     fetchProjectDetails();
   }, [projectId]);
+
+  useEffect(() => {
+    const userDetails = getUserInfo();
+    setUserRole(userDetails.role);
+    setUserId(userDetails.id);
+  }, [])
 
   const handleAddTask = () => setIsTaskModalOpen(true);
   const handleAddComment = () => setIsCommentModalOpen(true);
@@ -95,7 +103,7 @@ export const ProjectDetailsPage = () => {
               {project.tasks && project.tasks.length > 0 ? (
                   project.tasks.map((task) => (
                       <li key={task.id}>
-                        <TaskItem task={task} />
+                        <TaskItem task={task}  userId={userId} userRole={userRole} />
                       </li>
                   ))
               ) : <p>Aucune tâche disponible.</p>}
@@ -107,7 +115,6 @@ export const ProjectDetailsPage = () => {
                 <MessageSquare className="h-5 w-5 text-indigo-600" />
                 <h3 className="text-xl font-semibold text-gray-900">Commentaires</h3>
               </div>
-
               <button
                   onClick={handleAddComment}
                   className="inline-flex items-center px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200"
@@ -117,7 +124,7 @@ export const ProjectDetailsPage = () => {
               </button>
             </div>
             {project.comments && project.comments.length > 0 ? (
-                <CommentList comments={project.comments} />
+                <CommentList userRole={userRole} comments={project.comments} />
             ) : <p>Aucun commentaire pour ce projet.</p>}
           </div>
         </div>

@@ -16,8 +16,17 @@ const NEW_COMMENT_CREATE = gql`
     }
 `;
 
+const COMMENT_DELETED = gql`
+    subscription CommentDeleted($project: ID!) {
+        commentDeleted(project: $project)
+    }
+`;
+
 const CommentSubscription = ({ projectId, setProject }) => {
     const { data: addedData, error: addedError } = useSubscription(NEW_COMMENT_CREATE, {
+        variables: { project: projectId },
+    });
+    const { data: deletedCommentData, error: deletedCommentError } = useSubscription(COMMENT_DELETED, {
         variables: { project: projectId },
     });
 
@@ -30,8 +39,20 @@ const CommentSubscription = ({ projectId, setProject }) => {
         }
     }, [addedData, setProject]);
 
+    useEffect(() => {
+        if (deletedCommentData?.commentDeleted) {
+            setProject((prevProject) => ({
+                ...prevProject,
+                comments: prevProject.comments.filter((comment) => comment.id !== deletedCommentData.commentDeleted),
+            }));
+        }
+    }, [deletedCommentData, setProject]);
+
     if (addedError) {
         console.error("Erreur de subscription (ajout de commentaire) :", addedError);
+    }
+    if (deletedCommentError) {
+        console.error("Erreur de subscription (suppression de commentaire) :", deletedCommentError);
     }
 
     return null;

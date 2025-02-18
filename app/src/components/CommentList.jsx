@@ -1,6 +1,8 @@
 import PropTypes from "prop-types";
+import {Trash} from "lucide-react";
+import {deleteComment} from "../services/api.js";
 
-export const CommentList = ({ comments }) => {
+export const CommentList = ({ userRole, comments }) => {
   if (!comments || !comments.length) {
     return <p className="text-center text-gray-500 italic">Aucun commentaire pour le moment.</p>;
   }
@@ -16,6 +18,22 @@ export const CommentList = ({ comments }) => {
             <div className="text-sm font-medium text-gray-600">{comment.author.email}</div>
           </div>
           <div className="text-gray-800 pl-10">{comment.text}</div>
+          {(userRole === "ADMIN" && (
+              <div>
+                <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteComment(comment.id).then((r) => {
+                        if (!r.success) {
+                          console.log(r.error);
+                        }
+                      });
+                    }}
+                >
+                  <Trash />
+                </button>
+              </div>
+          ))}
         </div>
       ))}
     </div>
@@ -23,5 +41,6 @@ export const CommentList = ({ comments }) => {
 }
 
 CommentList.propTypes = {
+  userRole: PropTypes.string.isRequired,
   comments: PropTypes.array.isRequired,
 };

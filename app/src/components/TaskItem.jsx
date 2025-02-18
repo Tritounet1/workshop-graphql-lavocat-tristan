@@ -1,9 +1,9 @@
-import { Circle, Clock, CheckCircle2 } from 'lucide-react';
+import {Circle, Clock, CheckCircle2, Trash} from 'lucide-react';
 import { useState } from 'react';
 import PropTypes from "prop-types";
-import {updateTaskState} from "../services/api.js";
+import {deleteTask, updateTaskState} from "../services/api.js";
 
-export const TaskItem = ({ task }) => {
+export const TaskItem = ({ userRole, userId, task }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const statusConfig = {
@@ -46,6 +46,14 @@ export const TaskItem = ({ task }) => {
     }
   };
 
+  const handleDeleteTask = (taskId) => {
+    deleteTask(taskId).then((r) => {
+      if (!r.success) {
+        console.log(r.error);
+      }
+    });
+  }
+
   return (
       <div className="relative flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:shadow-sm transition-all duration-200">
         <div className="flex items-center space-x-3">
@@ -60,6 +68,19 @@ export const TaskItem = ({ task }) => {
           >
             {config.text}
           </button>
+
+          {(userRole === "ADMIN" || String(userId) === String(task.authorId)) && (
+              <div>
+                <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteTask(task.id);
+                    }}
+                >
+                  <Trash />
+                </button>
+              </div>
+          )}
 
           {isMenuOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-md z-10">
@@ -83,5 +104,7 @@ export const TaskItem = ({ task }) => {
 };
 
 TaskItem.propTypes = {
+  userRole: PropTypes.string.isRequired,
+  userId: PropTypes.number.isRequired,
   task: PropTypes.object.isRequired,
 };

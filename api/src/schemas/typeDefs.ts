@@ -30,6 +30,8 @@ export const typeDefs = buildSchema(`#graphql
     updateTaskState(id: ID!, state: String!): Task! @auth(requires: USER)
     deleteProject(id: ID!): ID! @auth(requires: USER)
     updateProject(id: ID!, name: String!, description: String!): Project! @auth(requires: USER)
+    deleteTask(id: ID!): ID! @auth(requires: USER)
+    deleteComment(id: ID!): ID! @auth(requires: USER)
   }
   
   type Subscription {
@@ -39,7 +41,7 @@ export const typeDefs = buildSchema(`#graphql
     
     taskAdded(project: ID!): Task! @auth(requires: USER)
     taskUpdated(project: ID!): Task! @auth(requires: USER)
-    taskDeleted(project: ID!): ID! @auth(requires: USER)
+    taskDeleted(project: ID!): ID! @auth(requires: ADMIN)
     
     commentAdded(project: ID!): Comment! @auth(requires: USER)
     commentUpdated(project: ID!): Comment! @auth(requires: USER)

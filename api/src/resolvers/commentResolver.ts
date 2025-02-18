@@ -2,6 +2,7 @@ import {Comment} from "../types";
 import {client} from "../client";
 
 const COMMENT_ADDED_EVENT = "commentAdded";
+const COMMENT_DELETED_EVENT = "commentDeleted";
 
 const getComments = async () => {
     try {
@@ -33,6 +34,18 @@ export const createComment = async (text: string, project: number, author: numbe
     }
 }
 
+const deleteComment = async (id: number) => {    try {
+    const query = 'DELETE FROM Comment WHERE id = $1 RETURNING *';
+    const values = [id];
+    const result = await client.query(query, values);
+    const row = result.rows[0];
+    return row.id;
+} catch (err) {
+    console.error('Erreur lors de la requête :', err);
+    return null;
+}
+}
+
 export const commentQueries = {
     comments: () => getComments(),
 };
@@ -51,12 +64,33 @@ export const CommentMutation = {
             return null;
         }
     },
+    deleteComment: async (_parent: any, args: { id: number }, context: any) => {
+        try {
+            const { id } = args
+            const result = await deleteComment(id);
+            if(result) {
+                context.pubsub.publish(COMMENT_DELETED_EVENT, result);
+            }
+            return result;
+        } catch (error) {
+            console.error("Erreur lors de la mutation :", error);
+            return null;
+        }
+    },
 }
 
 export const CommentSubscription = {
     commentAdded: {
         subscribe: (_parent: any, _args: any, context: any) => {
             return context.pubsub.asyncIterableIterator(COMMENT_ADDED_EVENT);
+        },
+        resolve: (payload: Comment) => {
+            return payload;
+        },
+    },
+    commentDeleted: {
+        subscribe: (_parent: any, _args: any, context: any) => {
+            return context.pubsub.asyncIterableIterator(COMMENT_DELETED_EVENT);
         },
         resolve: (payload: Comment) => {
             return payload;

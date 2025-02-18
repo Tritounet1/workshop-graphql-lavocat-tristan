@@ -244,6 +244,54 @@ export const deleteProject = async (id) => {
     }
 };
 
+export const deleteTask = async (id) => {
+    try {
+        const result = await client.mutate({
+            mutation: gql`
+        mutation DeleteTask($id: ID!) {
+          deleteTask(id: $id)
+        }
+      `,
+            variables: {
+                id,
+            },
+        });
+        if (result) {
+            return { success: true };
+        } else {
+            return { success: false, error: "Erreur lors de la suppréssion de la tâche." };
+        }
+    } catch (error) {
+        console.error("Erreur dans la mutation :", error);
+        return { success: false, error: "Une erreur est survenue lors de la requête." };
+    }
+};
+
+export const deleteComment = async (id) => {
+    try {
+        const result = await client.mutate({
+            mutation: gql`
+            mutation($deleteCommentId: ID!) {
+              deleteComment(id: $deleteCommentId)
+            }
+      `,
+            variables: {
+                "deleteCommentId": id,
+            },
+        });
+        if (result) {
+            return { success: true };
+        } else {
+            return { success: false, error: "Erreur lors de la suppréssion du commentaire." };
+        }
+    } catch (error) {
+        console.error("Erreur dans la mutation :", error);
+        return { success: false, error: "Une erreur est survenue lors de la requête." };
+    }
+};
+
+
+
 export const updateTaskState = async (taskId, newState, lastState) => {
     if (newState === lastState) {
         return { success: false, error: "L'état n'a pas changé." };
