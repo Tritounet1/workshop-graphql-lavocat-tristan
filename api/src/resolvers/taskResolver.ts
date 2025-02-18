@@ -1,5 +1,5 @@
 import { client } from "../client";
-import {Project, Task, TaskState} from "../types";
+import { Task, TaskState} from "../types";
 
 const TASK_ADDED_EVENT = "taskAdded";
 const TASK_UPDATE_EVENT = "taskUpdated";
@@ -19,8 +19,28 @@ const getTasks = async () => {
     }
 }
 
+const getTasksByStatus = async (project: number, status: string) => {
+    try {
+        const query = 'SELECT * FROM Task WHERE state = $1 AND project_id = $2';
+        const values = [status, project];
+        const result = await client.query(query, values);
+        console.log(result.rows)
+        const formattedResult = result.rows.map((row: Task) => ({
+            id: row.id,
+            title: row.title,
+            state: row.state,
+        }));
+        return formattedResult;
+    } catch (err) {
+        console.error('Erreur lors de la requête :', err);
+        return null;
+    }
+}
+
 export const taskQueries = {
     tasks: () => getTasks(),
+    tasksByStatus: async (_parent: any, args: { project: number, status: string }) => getTasksByStatus(args.project, args.status),
+
 };
 
 export const createTask: (title: string, project: number) => Promise<{

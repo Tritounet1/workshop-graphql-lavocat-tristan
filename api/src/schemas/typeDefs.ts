@@ -11,10 +11,13 @@ export const typeDefs = buildSchema(`#graphql
 
   type Query {
     projects: [Project!]! @auth(requires: USER)
+    projectsFilter(offset: Int!, limit: Int!): [Project!]! @auth(requires: USER)
+    searchProjects(keyword: String!): [Project!]! @auth(requires: USER)
     tasks: [Task!]! @auth(requires: USER)
     users: [User!]! @auth(requires: ADMIN)
     comments: [Comment!]! @auth(requires: USER)
     project(id: ID!): Project! @auth(requires: USER)
+    tasksByStatus(project: Int!, status: String!): [Task!]!
   }
 
   type Mutation {

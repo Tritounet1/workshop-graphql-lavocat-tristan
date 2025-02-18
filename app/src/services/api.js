@@ -81,6 +81,65 @@ export const getProjects = async () => {
     }
 };
 
+export const getProjectsWithOffset = async (offset, limit) => {
+    try {
+        const response = await client.query({
+            query: gql`
+         query ($offset: Int!, $limit: Int!) {
+          projectsFilter(offset: $offset, limit: $limit) {
+            id
+            name
+            description
+            lastUpdate
+            createdAt
+            owner {
+              email
+              id
+            }
+          }
+        }
+      `, variables: {
+                offset: offset,
+                limit: limit
+            }
+        });
+        return response.data.projectsFilter;
+    } catch (err) {
+        console.error("Erreur dans la requête :", err);
+        alert("Une erreur est survenue lors de la connexion.");
+        return [];
+    }
+};
+
+
+export const getSearchProjects = async (keyword) => {
+    try {
+        const response = await client.query({
+            query: gql`
+        query ($keyword: String!) {
+            searchProjects(keyword: $keyword) {
+                id
+                name
+                description
+                owner {
+                    id
+                    email
+                    role
+                }
+            }
+        }
+      `, variables: {
+                keyword: keyword
+            }
+        });
+        return response.data.searchProjects;
+    } catch (err) {
+        console.error("Erreur dans la requête :", err);
+        alert("Une erreur est survenue lors de la connexion.");
+        return [];
+    }
+};
+
 export const createComment = async (text, projectId) => {
     try {
         const result = await client.mutate({
@@ -145,7 +204,6 @@ export const deleteProject = async (id) => {
                 id,
             },
         });
-        console.log(result);
         if (result) {
             return { success: true };
         } else {
@@ -216,6 +274,27 @@ export const createTask = async (title, projectId) => {
         return { success: false, error: "Une erreur est survenue lors de la requête." };
     }
 };
+
+export const getTaskByState = async (id, state) => {
+    try {
+        const response = await client.query({
+            query: gql`
+            query ($project: Int!, $status: String!) {
+              tasksByStatus(project: $project, status: $status) {
+                id
+                title
+                state
+              }
+            }
+        `,
+            variables: { project: id, status: state },
+        });
+        return response.data.tasksByStatus;
+    } catch (err) {
+        console.error("Erreur dans la requête :", err);
+        return null;
+    }
+}
 
 export const getProjectDetails = async (projectId) => {
     try {

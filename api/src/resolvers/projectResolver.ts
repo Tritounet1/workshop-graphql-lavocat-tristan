@@ -146,9 +146,54 @@ const updateProjectLastDate = async (id: number) => {
     }
 };
 
+const getProjectsWithOffset = async (offset: number, limit: number) => {
+    try {
+        const result = await client.query('SELECT * FROM Project ORDER BY created_at DESC LIMIT $1 OFFSET $2', [limit, offset]);
+        const formattedResult = await Promise.all(result.rows.map(async (row: Project) => {
+            const project_id = row.id;
+            return {
+                id: project_id,
+                name: row.name,
+                description: row.description,
+                lastUpdate: row.last_update ? new Date(row.last_update).toISOString() : null,
+                createdAt: row.created_at ? new Date(row.created_at).toISOString() : null,
+            };
+        }));
+        return formattedResult;
+    } catch (err) {
+        console.error('Erreur lors de la requête :', err);
+        throw new Error('Erreur lors de la récupération des projets');
+    }
+}
+
+const getSearchProjects = async (keyword: string) => {
+    try {
+        const searchQuery = `
+            SELECT * FROM Project 
+            WHERE name ILIKE $1 OR description ILIKE $1
+            ORDER BY created_at DESC
+        `;
+        const result = await client.query(searchQuery, [`%${keyword}%`]);
+        const formattedResult = result.rows.map((row: Project) => ({
+            id: row.id,
+            name: row.name,
+            description: row.description,
+            lastUpdate: row.last_update ? new Date(row.last_update).toISOString() : null,
+            createdAt: row.created_at ? new Date(row.created_at).toISOString() : null,
+        }));
+
+        return formattedResult;
+    } catch (err) {
+        console.error('Erreur lors de la requête de recherche :', err);
+        throw new Error('Erreur lors de la recherche des projets');
+    }
+};
+
 export const ProjectQueries = {
     project: async (_parent: any, args: { id: number }) => getProject(args.id),
     projects: () => getProjects(),
+    projectsFilter: async (_parent: any, args: { offset: number, limit: number }) => getProjectsWithOffset(args.offset, args.limit),
+    searchProjects: async (_parent: any, args: { keyword: string }) => getSearchProjects(args.keyword),
 };
 
 
