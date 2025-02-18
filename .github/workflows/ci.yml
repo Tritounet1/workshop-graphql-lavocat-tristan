@@ -51,7 +51,7 @@ jobs:
       - name: Install dependencies (Backend)
         run: |
           cd api
-          npm install
+          npm install --force
 
       # 4. Run linting
       - name: Lint (Backend)

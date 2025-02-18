@@ -74,7 +74,6 @@ export const userMutation = {
                 const role  = result.role;
 
                 const token = createTokenFromJson({ id: id, email: email, role: role });
-                console.log('token : ', token);
                 if(token) {
                     return token;
                 }

@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from "jsonwebtoken";
-import {createProject, getProject, getUserById} from "../resolvers/projectResolver";
+import {createProject, getUserById} from "../resolvers/projectResolver";
 import {createUser} from "../resolvers/userResolver";
 import {createTask} from "../resolvers/taskResolver";
 import {createComment} from "../resolvers/commentResolver";
@@ -75,7 +75,7 @@ export const loadDatas = async() => {
             console.log("Can't create user.")
         }
     });
-    const project = await createProject('Task Management', 'Create App for manage tasks');
+    const project = await createProject('Task Management', 'Create App for manage tasks', 1);
     if (project) {
         console.log("Example project create.");
     } else {
@@ -90,7 +90,7 @@ export const loadDatas = async() => {
         }
     });
     /* CREATING COMMENT EXAMPLE */
-    await createComment('Hello :)', 1).then(r => {
+    await createComment('Hello :)', 1, 1).then(r => {
         if (r) {
             console.log("Example comment create.");
         } else {

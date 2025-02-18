@@ -19,7 +19,6 @@ export const getUserById = async (id: number) => {
 }
 
 export const getAuthorById = async (id: number) => {
-    console.log(id);
     await client.query(`SELECT author_id FROM Comment WHERE id = ${id}`).then(async(owner) => {
         return await getUserById(owner.rows[0].author_id);
     });
@@ -29,7 +28,6 @@ export const getCommentsPerProjectId = async(project_id : number) => {
     return await client.query(`SELECT * FROM Comment WHERE project_id = ${project_id}`).then((commentsArray) => {
         return commentsArray.rows.map( async(comment: Comment) => {
             const user = await getAuthorById(comment.id);
-            console.log(user);
             return {
                 id: comment.id,
                 author: user,
@@ -90,10 +88,8 @@ export const getProject = async (id: number) => {
     }
 };
 
-export const createProject = async (name: string, description: string) => {
+export const createProject = async (name: string, description: string, owner_id: number) => {
     try {
-        /* TODO GET USER TO SET OWNER_ID WITH THE JWT TOKEN */
-        const owner_id = 1;
         const query = 'INSERT INTO Project(name, description, owner_id, last_update, created_at) VALUES ($1, $2, $3, CURRENT_DATE, CURRENT_DATE) RETURNING *';
         const values = [name, description, owner_id];
         const result = await client.query(query, values);
@@ -160,7 +156,7 @@ export const ProjectMutation = {
     createProject: async (_parent: any, args: { name: string; description: string }, context: any) => {
         try {
             const { name, description } = args
-            const result = await createProject(name, description);
+            const result = await createProject(name, description, context.user.id);
             if(result) {
                 context.pubsub.publish(PROJECT_ADDED_EVENT, result);
             }

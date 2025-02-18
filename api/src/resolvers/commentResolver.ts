@@ -1,5 +1,5 @@
-import { client } from "../client";
 import {Comment} from "../types";
+import {client} from "../client";
 
 const COMMENT_ADDED_EVENT = "commentAdded";
 
@@ -17,13 +17,11 @@ const getComments = async () => {
     }
 }
 
-export const createComment = async (text: string, project: number) => {
+export const createComment = async (text: string, project: number, author: number) => {
     try {
-        const author = 1; /* TODO RECUPERER L'USER AVEC LE TOWEN JWT */
         const query = 'INSERT INTO Comment(author_id, text, project_id) VALUES ($1, $2, $3) RETURNING *';
         const values = [author, text, project];
         const result = await client.query(query, values);
-        console.log(result.rows);
         const formattedResult = {
             id: result.rows[0].id,
             text: result.rows[0].text,
@@ -43,23 +41,11 @@ export const CommentMutation = {
     createComment: async (_parent: any, args: { text: string, project: number }, context: any) => {
         try {
             const { text, project } = args
-            const query = 'INSERT INTO Comment(author_id, text, project_id) VALUES ($1, $2, $3) RETURNING *';
-            const values = [context.user.id, text, project];
-            const result = await client.query(query, values);
-            if(result) {
-                context.pubsub.publish(COMMENT_ADDED_EVENT, {
-                    id: result.rows[0].id,
-                    author: result.rows[0].author_id,
-                    text: result.rows[0].text,
-                    project: result.rows[0].project,
-                });
+            const comment = await createComment(text, project, context.user.id);
+            if(comment) {
+                context.pubsub.publish(COMMENT_ADDED_EVENT, comment);
             }
-            return {
-                id: result.rows[0].id,
-                author: result.rows[0].author_id,
-                text: result.rows[0].text,
-                project: result.rows[0].project,
-            }
+            return comment;
         } catch (error) {
             console.error("Erreur lors de la mutation :", error);
             return null;
