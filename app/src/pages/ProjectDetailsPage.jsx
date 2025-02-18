@@ -65,11 +65,11 @@ export const ProjectDetailsPage = () => {
   };
 
   const setTasksByState = async (state) => {
+    setTaskState(state);
     if(state === "NO_FILTER") {
       await fetchProjectDetails();
       return;
     }
-    setTaskState(state);
     const result = await getTaskByState(Number(projectId), state);
     setProject(prev => ({ ...prev, tasks: result || [] }));
   };
